@@ -2,6 +2,8 @@
 
 一个纯静态游戏与互动资源门户。构建后，`dist/` 可以直接部署到任意静态托管服务。
 
+在线游玩：[games.leisiyu.dev](https://games.leisiyu.dev/)。
+
 ## 开发
 
 ```bash

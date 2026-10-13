@@ -2,6 +2,14 @@
   "$schema": "https://unpkg.com/wrangler/config-schema.json",
   "name": "minigames",
   "account_id": "df4481f3ce1fa0394b4617442a97d147",
+  "workers_dev": true,
+  "preview_urls": true,
+  "routes": [
+    {
+      "pattern": "games.leisiyu.dev",
+      "custom_domain": true
+    }
+  ],
   "compatibility_date": "2026-08-22",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
