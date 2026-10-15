@@ -7,3 +7,4 @@
 - 浏览器：editor（修正测试正则转义后）、continuous-preview、pdf、score-text、state、jianpu、storage、formats、project-navigation、staff-layout 通过。
 - 实测完美友人.acep：汉字写成拼音模式粘贴“被子里
 可怜虫”→ 已定位 2/2 句 · 替换 6 个音符，只改这 6 个；合并连续音符“中”提示 9 个续唱音符并入前一字。
+- 发布 9723c23 后用户反馈：窄屏下返回主菜单只剩“←”不易发现 → 窄屏改为“← 主菜单”短标签（完整无障碍名称不变）；门户卡片顺序按用户要求改为 01 十光年的距离、02 卡桑德里传说、03 CASSIE PLUS、04 织音机（projects.json 顺序即编号）。

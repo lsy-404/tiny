@@ -1,18 +1,5 @@
 [
   {
-    "slug": "cassandri-legend",
-    "path": "games/cassandri-legend",
-    "kind": "game",
-    "eyebrow": "文字冒险 RPG",
-    "title": "卡桑德里传说",
-    "description": "选择职业、祝福与装备，穿过二十波随机战斗。",
-    "cover": "./games/cassandri-legend/assets/cover.png",
-    "coverAlt": "卡桑德里传说船上银发人物马赛克封面",
-    "credit": "主创：槃清 · 编码：武乙凌薇",
-    "meta": "单人 · 自动存档 · 6.5",
-    "action": "开始游玩"
-  },
-  {
     "slug": "ten-light-years",
     "path": "games/ten-light-years",
     "kind": "experience",
@@ -26,17 +13,17 @@
     "action": "进入星图"
   },
   {
-    "slug": "vocal-score",
-    "path": "projects/vocal-score",
-    "kind": "tool",
-    "eyebrow": "谱面工具",
-    "title": "织音机",
-    "description": "在浏览器本地读取 Synthesizer V、ACE Studio、VOCALOID、UTAU、MIDI 与 FL Studio 等工程，编辑歌词并生成五线谱、简谱与 PDF；工程和设置保存在当前浏览器。",
-    "cover": "./assets/vocal-score.svg",
-    "coverAlt": "织音机：五线谱、音符与纸张插画",
-    "credit": "本地处理 · 使用 Vue、OpenSheetMusicDisplay 与 jsPDF，格式参考 UtaFormatix",
-    "meta": "PDF · MusicXML · 简谱",
-    "action": "打开工具"
+    "slug": "cassandri-legend",
+    "path": "games/cassandri-legend",
+    "kind": "game",
+    "eyebrow": "文字冒险 RPG",
+    "title": "卡桑德里传说",
+    "description": "选择职业、祝福与装备，穿过二十波随机战斗。",
+    "cover": "./games/cassandri-legend/assets/cover.png",
+    "coverAlt": "卡桑德里传说船上银发人物马赛克封面",
+    "credit": "主创：槃清 · 编码：武乙凌薇",
+    "meta": "单人 · 自动存档 · 6.5",
+    "action": "开始游玩"
   },
   {
     "slug": "cassie",
@@ -49,6 +36,19 @@
     "coverAlt": "CASSIE 广播终端与音频波形插画",
     "credit": "开源代码 AGPL-3.0 · 音频素材 CC BY-SA 3.0，详见工具内许可",
     "meta": "本地处理 · WAV · Opus",
+    "action": "打开工具"
+  },
+  {
+    "slug": "vocal-score",
+    "path": "projects/vocal-score",
+    "kind": "tool",
+    "eyebrow": "谱面工具",
+    "title": "织音机",
+    "description": "在浏览器本地读取 Synthesizer V、ACE Studio、VOCALOID、UTAU、MIDI 与 FL Studio 等工程，编辑歌词并生成五线谱、简谱与 PDF；工程和设置保存在当前浏览器。",
+    "cover": "./assets/vocal-score.svg",
+    "coverAlt": "织音机：五线谱、音符与纸张插画",
+    "credit": "本地处理 · 使用 Vue、OpenSheetMusicDisplay 与 jsPDF，格式参考 UtaFormatix",
+    "meta": "PDF · MusicXML · 简谱",
     "action": "打开工具"
   }
 ]
