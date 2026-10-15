@@ -1,8 +1,8 @@
-# Mini Projects
+# Tiny Projects
 > 最后更新：2026-10-15
 
 ## 项目目标
-保留现有门户与互动作品，将已验证的 SVP 人声谱工具接入 mini.leisiyu.dev。
+在 tiny.leisiyu.dev 展示小工具、游戏和互动作品，包含已验证的 SVP 人声谱工具。
 
 ## 技术栈
 静态门户、Node 构建、pnpm、Cloudflare Workers 静态资源；人声谱使用 Vue、Vue I18n、Vite、OpenSheetMusicDisplay、PDF.js 和 jsPDF。
