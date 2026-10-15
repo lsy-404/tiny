@@ -84,10 +84,10 @@ if (!tenLightYears.includes('viewport-fit=cover') || !tenLightYears.includes('@m
 if (cassandri.includes('archive-exit') || tenLightYears.includes('archive-exit')) {
   throw new Error('A game exit control must be located in its settings menu, not fixed to the page.');
 }
-if (!cassandri.includes('id="btnExitToPortal"') || !cassandri.includes('href="../../"') || !cassandri.includes('返回迷你项目')) {
+if (!cassandri.includes('id="btnExitToPortal"') || !cassandri.includes('href="../../"') || !cassandri.includes('返回 Tiny Projects')) {
   throw new Error('Cassandri Legend is missing its settings-menu exit control.');
 }
-if (!tenLightYears.includes('id="exit-game"') || !tenLightYears.includes('href="../../"') || !tenLightYears.includes('返回迷你项目')) {
+if (!tenLightYears.includes('id="exit-game"') || !tenLightYears.includes('href="../../"') || !tenLightYears.includes('返回 Tiny Projects')) {
   throw new Error('Ten Light Years is missing its settings-menu exit control.');
 }
 const cassandriMenu = [
@@ -112,7 +112,7 @@ if (!/<h3>潘多拉之盒<\/h3>[\s\S]*<h3>大记忆消失术<\/h3>/.test(cassand
 }
 
 const home = await readFile(join(output, 'index.html'), 'utf8');
-if (!home.includes('project-grid') || !home.includes('app.js') || !home.includes('迷你项目') || !home.includes('id="about"') || !home.includes('本站作者：Siyu Lei')) {
+if (!home.includes('project-grid') || !home.includes('app.js') || !home.includes('Tiny Projects') || !home.includes('id="about"') || !home.includes('本站作者：Siyu Lei')) {
   throw new Error('The portal home page is missing its project list or concise about information.');
 }
 if (home.includes('收录') || home.includes('静态发布') || home.includes('关于本站')) {
