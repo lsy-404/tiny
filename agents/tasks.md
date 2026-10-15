@@ -17,3 +17,6 @@
 | 012 | [Verify] integrated_release | 集成回归与操作文档 | 全功能和旧门户发布检查 | ✅ 已完成 |
 | 013 | [Fix] windows_test_paths | 修复旧测试Windows文件路径 | 保持完整断言并跑通发布检查 | ✅ 已完成 |
 | 014 | [Brand] tiny_projects | 全站名称和正式域名统一为 Tiny Projects | 用户确认 tiny.leisiyu.dev | 🔄 进行中 |
+| 015 | [Brand] tiny_portal | 门户、作品返回入口与说明改名 | 全站品牌一致 | ✅ 已完成 |
+| 016 | [Verify] tiny_brand | 更新现有构建和发布断言 | 域名和品牌验证 | ✅ 已完成 |
+| 017 | [Verify] tiny_review | 独立复核可见品牌残留 | 核对构建产物 | 🔄 进行中 |
