@@ -19,11 +19,17 @@ const workers=(await readdir(path.join(root,tool,'assets'))).filter(file=>/^pdf\
 assert.equal(workers.length,2,'Both local PDF generation and PDF.js workers must be bundled.');
 const files=[...new Set([...existing,tool+'index.html',...toolAssets,...workers])];
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
+let normalizedEdgeHtml=0;
 for(let offset=0;offset<files.length;offset+=4){
   await Promise.all(files.slice(offset,offset+4).map(async file=>{
     const response=await fetch(new URL(file,base));assert.equal(response.status,200,file);
     if(/\.m?js$/.test(file))assert.match(response.headers.get('content-type')||'',/javascript/,`${file} MIME`);
-    const actual=Buffer.from(await response.arrayBuffer()),expected=await readFile(path.join(root,file));
+    let actual=Buffer.from(await response.arrayBuffer()),expected=await readFile(path.join(root,file));
+    if(file.endsWith('.html')){
+      const html=actual.toString('utf8');
+      const stripped=html.replace(/<script\b[^>]*\bsrc="https:\/\/static\.cloudflareinsights\.com\/beacon\.min\.js(?:\/[^"<>]*)?"[^>]*><\/script>/g,'');
+      if(stripped!==html){actual=Buffer.from(stripped.replace(/>\s+</g,'><'));expected=Buffer.from(expected.toString('utf8').replace(/>\s+</g,'><'));normalizedEdgeHtml++;}
+    }
     assert.equal(digest(actual),digest(expected),`${file} differs from verified build`);
   }));
 }
@@ -35,4 +41,4 @@ for(const name of ['star-wish','star-lalala']){
 }
 const catalog=await(await fetch(new URL('projects.json',base))).json();
 assert.equal(catalog.length,3);assert(catalog.some(project=>project.path===tool.slice(0,-1)&&project.kind==='tool'));
-console.log(JSON.stringify({status:'passed',verifiedFileHashes:files.length,canonicalRoutes:3,audioHeadChecks:2,projects:catalog.length}));
+console.log(JSON.stringify({status:'passed',verifiedFileHashes:files.length,normalizedEdgeHtml,canonicalRoutes:3,audioHeadChecks:2,projects:catalog.length}));
