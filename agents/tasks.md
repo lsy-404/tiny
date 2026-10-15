@@ -26,4 +26,4 @@
 | 021 | [Feature] vocal_score_refresh | 人声谱 logo、精简文案与布局、SVG 直接预览 | 用户要求加 logo、去描述文本、优化布局、减少渲染时间 | ✅ 已完成 |
 | 022 | [Feature] notation_feedback | 连杠与按拍拼写、转调、渐变速、页边距 | 群聊试用反馈与用户要求 | ✅ 已完成 |
 | 023 | [Feature] multi_format_import | 改名织音机，支持 UtaFormatix 全部输入、ACEP、MIDI、FL Studio 器乐总谱（Beta） | 用户要求与群聊反馈 | ✅ 已完成 |
-| 024 | [Feature] lyric_paste_and_note_merge | 粘贴歌词按句定位替换；合并连续音符低/中/高 | 用户反馈 | 🔄 进行中 |
+| 024 | [Feature] lyric_paste_and_note_merge | 粘贴歌词按句定位替换；合并连续音符低/中/高 | 用户反馈 | ✅ 已完成 |
