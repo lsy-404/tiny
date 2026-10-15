@@ -39,6 +39,36 @@ for (const project of catalog) {
   }
 }
 
+const cassieEntry = catalog.find((project) => project.slug === 'cassie');
+if (!cassieEntry || cassieEntry.path !== 'projects/cassie') {
+  throw new Error('The CASSIE catalog entry must use the projects/cassie route.');
+}
+const cassieOutput = join(output, 'projects', 'cassie');
+const cassieHtml = await readFile(join(cassieOutput, 'index.html'), 'utf8');
+const cassieAssets = [...cassieHtml.matchAll(/(?:src|href)="([^"]+)"/g)]
+  .map((match) => match[1])
+  .filter((asset) => asset.startsWith('/projects/cassie/') || asset.startsWith('./'));
+if (!cassieAssets.some((asset) => /\.m?js(?:\?|$)/.test(asset))) {
+  throw new Error('The CASSIE subpath entry does not reference its emitted application bundle.');
+}
+for (const asset of cassieAssets) {
+  const relative = asset.startsWith('./') ? asset.slice(2) : asset.replace(/^\/projects\/cassie\//, '');
+  await mustExist(join(cassieOutput, relative));
+}
+const cassieFiles = await readdir(cassieOutput, { recursive: true });
+if (!cassieFiles.some((file) => /worker/i.test(file) && /\.m?js$/.test(file))) {
+  throw new Error('The CASSIE build is missing its emitted worker JavaScript asset.');
+}
+const headersPath = join(output, '_headers');
+const headers = await readFile(headersPath, 'utf8');
+const cassieHeaderBlock = headers.split(/\r?\n(?=\/)/).find((block) => /^\/projects\/cassie(?:\/|$)/m.test(block));
+if (!cassieHeaderBlock || !/cross-origin-embedder-policy/i.test(cassieHeaderBlock) || !/cross-origin-opener-policy/i.test(cassieHeaderBlock)) {
+  throw new Error('The root _headers file is missing the CASSIE-only cross-origin isolation policy.');
+}
+if (/cross-origin-(?:embedder|opener)-policy/i.test(headers.replace(cassieHeaderBlock, ''))) {
+  throw new Error('The CASSIE isolation policy must be scoped to the CASSIE subpath.');
+}
+
 await Promise.all([
   mustExist(join(output, 'games', 'cassandri-legend', 'fonts', 'fusion-pixel-12px-proportional-zh_hans.otf.woff2')),
   mustExist(join(output, 'games', 'ten-light-years', 'main.js')),

@@ -17,7 +17,16 @@ const html=await readFile(path.join(root,tool,'index.html'),'utf8');
 const toolAssets=[...html.matchAll(/(?:src|href)="\.\/([^"]+)"/g)].map(match=>tool+match[1]);
 const workers=(await readdir(path.join(root,tool,'assets'))).filter(file=>/^pdf\.worker[.-]/.test(file)).map(file=>`${tool}assets/${file}`);
 assert.equal(workers.length,2,'Both local PDF generation and PDF.js workers must be bundled.');
-const files=[...new Set([...existing,tool+'index.html',...toolAssets,...workers])];
+const cassie='projects/cassie/';
+const cassieHtml=await readFile(path.join(root,cassie,'index.html'),'utf8');
+const cassieAssets=[...cassieHtml.matchAll(/(?:src|href)="([^"]+)"/g)]
+  .map(match=>match[1])
+  .filter(asset=>asset.startsWith('./')||asset.startsWith('/projects/cassie/'))
+  .map(asset=>cassie+asset.replace(/^\.\//,'').replace(/^\/projects\/cassie\//,''));
+assert(cassieAssets.some(file=>/\.m?js$/.test(file)),'CASSIE must emit an app bundle under its subpath.');
+assert(cassieAssets.some(file=>/\.css$/.test(file)),'CASSIE must emit its stylesheet under its subpath.');
+assert(cassieAssets.some(file=>/[-.][a-f0-9]{8,}\./i.test(file)),'CASSIE must use a content-hashed public asset.');
+const files=[...new Set([...existing,tool+'index.html',...toolAssets,...workers,cassie+'index.html',...cassieAssets])];
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
 let normalizedEdgeHtml=0;
 for(let offset=0;offset<files.length;offset+=4){
@@ -33,12 +42,13 @@ for(let offset=0;offset<files.length;offset+=4){
     assert.equal(digest(actual),digest(expected),`${file} differs from verified build`);
   }));
 }
-for(const route of ['games/cassandri-legend','games/ten-light-years','projects/vocal-score']){
+for(const route of ['games/cassandri-legend','games/ten-light-years','projects/vocal-score','projects/cassie']){
   const response=await fetch(new URL(route,base),{redirect:'manual'});assert.equal(response.status,307,route);assert(new URL(response.headers.get('location'),base).pathname.endsWith(route+'/'));
 }
 for(const name of ['star-wish','star-lalala']){
   const response=await fetch(new URL(`games/ten-light-years/audio/${name}.m4a`,base),{method:'HEAD'});assert.equal(response.status,200);assert.match(response.headers.get('content-type')||'',/audio/);
 }
 const catalog=await(await fetch(new URL('projects.json',base))).json();
-assert.equal(catalog.length,3);assert(catalog.some(project=>project.path===tool.slice(0,-1)&&project.kind==='tool'));
-console.log(JSON.stringify({status:'passed',verifiedFileHashes:files.length,normalizedEdgeHtml,canonicalRoutes:3,audioHeadChecks:2,projects:catalog.length}));
+assert.equal(catalog.length,4);assert(catalog.some(project=>project.path===tool.slice(0,-1)&&project.kind==='tool'));
+assert(catalog.some(project=>project.slug==='cassie'&&project.path===cassie.slice(0,-1)&&project.kind==='tool'));
+console.log(JSON.stringify({status:'passed',verifiedFileHashes:files.length,normalizedEdgeHtml,canonicalRoutes:4,audioHeadChecks:2,projects:catalog.length}));
