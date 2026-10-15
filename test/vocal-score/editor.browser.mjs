@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {openSection} from './workspace.browser.mjs';
 
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const base=process.env.PREVIEW_URL || 'http://127.0.0.1:4190/projects/vocal-score/';
@@ -29,6 +30,7 @@ try {
   await page.locator('#export-button:enabled').waitFor({timeout:30000});
   assert.equal(await page.locator('#message.error:visible').count(),0,'synthetic project should import without error');
   const panel=page.locator('#lyrics-panel');
+  await openSection(page,'lyrics');
   if(!(await panel.evaluate(node=>node.open))) await panel.locator('summary').click();
   const editor=page.locator('.lyric-editor');
   await editor.waitFor({state:'visible'});

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {openSection} from './workspace.browser.mjs';
 
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const base=process.env.PREVIEW_URL || 'http://127.0.0.1:4190/projects/vocal-score/';
@@ -46,12 +47,13 @@ const recordRows=page=>page.evaluate(async()=>{
   } finally { db.close(); }
 });
 const rowFor=(page,name)=>page.locator('#file-list .file-row').filter({hasText:name});
-async function selectDocument(page,name){await rowFor(page,name).locator('.file-item').click();await page.locator('#export-button:enabled').waitFor({timeout:30000});}
+async function selectDocument(page,name){await openSection(page,'files');await rowFor(page,name).locator('.file-item').click();await page.locator('#export-button:enabled').waitFor({timeout:30000});}
 async function setChecked(locator,value){if(await locator.isChecked()!==value)await locator.locator('xpath=..').click();}
-async function openLyrics(page){if(!(await page.locator('#lyrics-panel').evaluate(node=>node.open)))await page.locator('#lyrics-panel > summary').click();}
-async function openDetails(page,id){const details=page.locator(`#${id}`);if(!(await details.evaluate(node=>node.open)))await details.locator('summary').click();}
+async function openLyrics(page){await openSection(page,'lyrics');if(!(await page.locator('#lyrics-panel').evaluate(node=>node.open)))await page.locator('#lyrics-panel > summary').click();}
+async function openDetails(page,id){await openSection(page,id==='tuning-panel'?'tuning':'analysis');const details=page.locator(`#${id}`);if(!(await details.evaluate(node=>node.open)))await details.locator('summary').click();}
 async function waitSaved(page){await page.waitForFunction(()=>document.querySelector('#storage-status')?.textContent?.includes('已保存在此浏览器'),null,{timeout:15000});}
 async function setOptionalPaperSettings(page,documentKey,index){
+  await openSection(page,'settings');
   for(const id of ['paper-size','page-orientation']){
     const control=page.locator(`#${id}`);
     if(await control.count()&&await control.locator('option').count()>index){
@@ -63,6 +65,7 @@ async function assertOptionalPaperSettings(page,documentKey){
   for(const [id,value] of Object.entries(paperSelections[documentKey]))assert.equal(await page.locator(`#${id}`).inputValue(),value,`${id} should remain bound to its document`);
 }
 async function applyA(page){
+  await openSection(page,'settings');
   await page.locator('#score-title').fill('标题 A <雪>');
   await page.locator('#grid').selectOption('8');
   await page.locator('#key').selectOption('2');
@@ -83,6 +86,7 @@ async function applyA(page){
   await page.locator('#export-button:enabled').waitFor({timeout:30000});await waitSaved(page);
 }
 async function applyB(page){
+  await openSection(page,'settings');
   await page.locator('#score-title').fill('Title B');
   await page.locator('#grid').selectOption('32');
   await page.locator('#key').selectOption('-3');
@@ -103,6 +107,7 @@ async function applyB(page){
   await page.locator('#export-button:enabled').waitFor({timeout:30000});await waitSaved(page);
 }
 async function assertA(page){
+  await openSection(page,'settings');
   assert.equal(await page.locator('#score-title').inputValue(),'标题 A <雪>');
   assert.equal(await page.locator('#grid').inputValue(),'8');assert.equal(await page.locator('#key').inputValue(),'4');
   assert.equal(await page.locator('#transpose-value').textContent(),'+2');assert.equal(await page.locator('#score-font').inputValue(),'sans');
@@ -119,6 +124,7 @@ async function assertA(page){
   assert.equal(await page.locator('#lyric-editor .lyric-editor__note input').nth(0).inputValue(),'修改后的歌词A');
 }
 async function assertB(page){
+  await openSection(page,'settings');
   assert.equal(await page.locator('#score-title').inputValue(),'Title B');
   assert.equal(await page.locator('#grid').inputValue(),'32');assert.equal(await page.locator('#key').inputValue(),'2');
   assert.equal(await page.locator('#transpose-value').textContent(),'-1');assert.equal(await page.locator('#score-font').inputValue(),'mono');
@@ -204,7 +210,7 @@ try {
   assert.equal(await page.locator('#language-select').inputValue(),'ko','language preference should survive a new page');
   await assertA(page);
 
-  await rowFor(page,'state-b.svp').locator('.file-remove').click();
+  await openSection(page,'files');await rowFor(page,'state-b.svp').locator('.file-remove').click();
   await page.waitForFunction(()=>document.querySelector('#file-count')?.textContent==='1',null,{timeout:10000});
   assert.equal((await recordRows(page)).length,1,'removal should delete the IndexedDB record');
   await page.reload();await page.locator('#export-button:enabled').waitFor({timeout:30000});
