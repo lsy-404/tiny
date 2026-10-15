@@ -40,6 +40,6 @@ async function returnToHome(page, width) {
   assert.equal(new URL(await link.getAttribute('href'), page.url()).pathname, '/');
   await link.focus();
   await page.keyboard.press('Enter');
-  await page.waitForURL('**/');
+  await page.waitForURL((url) => url.pathname === '/');
   assert.equal(new URL(page.url()).pathname, '/', `Return link failed at ${width}px.`);
 }
