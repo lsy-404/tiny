@@ -77,6 +77,9 @@ test('creates MusicXML 4.0 with measure rests, ties across bars, and corrected o
   assert.equal(result.stats.measureCount, 2);
   assert.equal((result.xml.match(/<tie type="start"\/>/g) || []).length, 1);
   assert.equal((result.xml.match(/<tie type="stop"\/>/g) || []).length, 1);
+  const noteIds = [...result.xml.matchAll(/<note id="([^"]+)"/g)].map(match => match[1]);
+  assert.equal(new Set(noteIds).size, noteIds.length, 'every MusicXML note id must be globally unique, including tied measure segments');
+  assert(noteIds.some(id => id.includes('-m0-')) && noteIds.some(id => id.includes('-m1-')), 'split note segments must identify their measure');
   assert.match(result.xml, /<step>C<\/step><octave>4<\/octave>/);
   assert.match(result.xml, /<rest\/><duration>48<\/duration>/);
   assert.match(result.xml, /<divisions>16<\/divisions><key><fifths>0<\/fifths><\/key><time><beats>4<\/beats><beat-type>4<\/beat-type><\/time><clef>/);
