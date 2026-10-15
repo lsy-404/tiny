@@ -1,8 +1,9 @@
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const root=resolve(new URL('..',import.meta.url).pathname);
+const root=resolve(fileURLToPath(new URL('..',import.meta.url)));
 const runtime=await readFile(resolve(root,'games/cassandri-legend/game.js'),'utf8');
 
 for(const text of ['purchaseSlotUnlocked','function makeJobAmulet()','part:"accessory"','附赠职业护符','购买并领取'])if(!runtime.includes(text))throw new Error(`Purchased universal-slot gift contract is missing: ${text}`);
