@@ -1,8 +1,8 @@
-# Mini Projects
+# Tiny Projects
 
-一个展示迷你项目、小工具、游戏与互动作品的静态门户。构建后，`dist/` 可以直接部署到任意静态托管服务。门户现包含本地运行的 SVP 人声谱工具，可编辑歌词并预览五线谱、简谱与 PDF。
+Tiny Projects 是展示小工具、游戏与互动作品的静态门户。构建后，`dist/` 可以直接部署到任意静态托管服务。门户现包含本地运行的 SVP 人声谱工具，可编辑歌词并预览五线谱、简谱与 PDF。
 
-在线访问：[mini.leisiyu.dev](https://mini.leisiyu.dev/)。
+在线访问：[tiny.leisiyu.dev](https://tiny.leisiyu.dev/)。
 
 ## 开发
 
