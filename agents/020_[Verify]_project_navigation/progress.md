@@ -8,3 +8,5 @@
 - Added `test/project-navigation.browser.mjs` for desktop and mobile portal and keyboard return flows.
 - `node --check` passed for all three modified/new test scripts, and `git diff --check` passed. Runtime verification remains pending the fresh CASSIE-integrated build.
 - Committed the scoped verification changes as `ef22cb7`; the coordinating task will run browser checks after preparing the integrated build.
+- Corrected the review follow-up: CASSIE headers now require scoped CSP/nosniff without isolation policy; release checks cover Vite hashes and its static, audio, manifest, license, worker, and WASM resources; browser link lookup accepts each localized Tiny Projects label.
+- Syntax checks and diff whitespace checks passed after the review corrections. Runtime checks remain with the coordinating task after build readiness.
