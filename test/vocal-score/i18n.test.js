@@ -54,7 +54,7 @@ test('App and lyric editor messages exist in all locales and resolve their place
   const previous = getLanguage();
   tcase.after(() => setLanguage(previous));
   const keys = [
-    '织音机', '织音机首页', 'by 署名', '标记重复乐段', '谱面显示推测和弦', '调号', '大调', '小调', '自动修正音阶', '偏移阈值',
+    '织音机', '织音机首页', 'by 署名', '标记重复乐段', '谱面显示推测和弦', '调号', '大调', '小调', '考虑调校参数', '拖动排序', '上移', '下移', 'svp.warning.snapped', '偏移阈值',
     '当前所选声部没有触发半音修正。', '{parts} 声部 · {count} 音符', '{count} 音分',
     '音域 {range} · {shift} 半音。', '{length} 小节 × {count}',
     '{name}：存在重叠发声，可能为和声或叠唱', '匹配 {percent}%', '推测和弦', '工程文件列表',
@@ -65,12 +65,12 @@ test('App and lyric editor messages exist in all locales and resolve their place
     '保存失败；请保留原文件并检查浏览器存储空间。', '移除失败，请重试。',
     '无法读取浏览器存储；请检查浏览器的数据权限。', '（异词）', '和弦为自动推测（?）',
     'lyricEditor.notes', 'lyricEditor.position', 'lyricEditor.countOver', 'lyricEditor.countUnder',
-    'lyricEditor.clearNote', 'lyricEditor.restoreNote', 'lyricEditor.writeTyped', 'lyricEditor.writePinyin', 'lyricEditor.writeHanzi', 'lyricEditor.locatedCount', 'lyricEditor.notFound', 'lyricEditor.occurrence', '主菜单', '合并连续音符', '不合并', '低 · 同音延长', '中 · 含元音续唱', '高 · 含短装饰音', '{count} 个续唱音符并入前一字',
+    'lyricEditor.clearNote', 'lyricEditor.restoreNote', 'lyricEditor.writeTyped', 'lyricEditor.writePinyin', 'lyricEditor.writeHanzi', 'lyricEditor.locatedCount', 'lyricEditor.notFound', 'lyricEditor.occurrence', 'lyricEditor.approximate', 'lyricEditor.noNote', '主菜单', '加载制谱引擎', '准备字体', '恢复浏览器中的工程', '{count} 个工程', '检查 PDF 导出', '排版《{title}》', '五线谱暂不可用，简谱仍可使用', '此浏览器无法在后台生成 PDF', '仍在排版，可先进入', '准备就绪', '正在启动', '合并连续音符', '不合并', '低 · 同音延长', '中 · 含元音续唱', '高 · 含短装饰音', '{count} 个续唱音符并入前一字',
     '乐谱预览', '上一页', '下一页', '适合页面', '第 {page} 页，共 {total} 页',
     '下载 PDF', '方向', '横向', '纵向', '纸张', '缩放', '适合页宽',
     '正在恢复文件…', '正在保存…', '已保存在此浏览器', '已移除'
   ];
-  const params = {located: 1, phrases: 2, notes: 4, format: 'MIDI', detail: '', name: 'a.txt', measure: 9, key: 'E♭ / c', parts: 2, count: 3, range: 'C3–C5', shift: '+1', length: 4, name: 'Voice', percent: 88, bar: 2, beat: 3, difference: 1, index: 5};
+  const params = {track: 'Lead', title: 'Song', located: 1, phrases: 2, notes: 4, format: 'MIDI', detail: '', name: 'a.txt', measure: 9, key: 'E♭ / c', parts: 2, count: 3, range: 'C3–C5', shift: '+1', length: 4, name: 'Voice', percent: 88, bar: 2, beat: 3, difference: 1, index: 5};
 
   setLanguage('zh-CN');
   assert.equal(t('lyricEditor.notes'), '音符歌词');

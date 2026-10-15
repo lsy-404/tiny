@@ -72,7 +72,7 @@ try{
   }
   const tuned=structuredClone(project);tuned.projectName='Tuning study';tuned.tracks=tuned.tracks.slice(0,1);tuned.tracks[0].mainGroup.notes=tuned.tracks[0].mainGroup.notes.slice(0,4);tuned.tracks[0].mainGroup.notes[0].detune=70;tuned.tracks[0].mainGroup.notes[1].detune=-60;
   await page.locator('#file-input').setInputFiles({name:'tuning.svp',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(tuned))});await page.waitForFunction(()=>document.querySelector('.file-item[aria-pressed=true]')?.textContent.includes('tuning.svp'),null,{timeout:30000});await ready();
-  await openSection(page,'tuning');assert.match(await page.locator('#tuning-count').textContent(),/2 个音符修正/);assert.equal(await page.locator('.tuning-table tbody tr').count(),2);
+  await openSection(page,'tuning');assert.match(await page.locator('#tuning-count').textContent(),/0 个音符修正/,'tuning parameters are ignored until switched on');await page.locator('#tuning-settings .fluent-checkbox').click();await ready();assert.match(await page.locator('#tuning-count').textContent(),/2 个音符修正/);assert.equal(await page.locator('.tuning-table tbody tr').count(),2);
   await page.locator('#tuning-threshold').selectOption('100');await ready();assert.match(await page.locator('#tuning-count').textContent(),/0 个音符修正/);
   await page.locator('#tuning-threshold').selectOption('50');await ready();await page.locator('#tuning-settings .fluent-checkbox').click();await ready();assert.match(await page.locator('#tuning-count').textContent(),/0 个音符修正/);
   await openSection(page,'settings');await page.locator('#score-title').fill('<img src=x onerror=alert(1)>');await ready();assert.equal(await page.locator('#score img[onerror]').count(),0);

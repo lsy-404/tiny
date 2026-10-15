@@ -79,3 +79,23 @@ test('keeps typed words, falls back to other polyphonic readings, and reports ph
   assert.equal(missing[0].chosen, -1);
   assert.equal(applyLocatedLyrics(notes, missing), 0);
 });
+
+test('looks past breaths, re-sung vowels and phoneme notes, and accepts spelling variants', () => {
+  const notes = ['la', 'zou', 'ou', 'br', 'dao', 'tian', 'ya', '.l y E', 'lue'].map(note);
+  const phrases = locatePastedLyrics('走到天涯掠', notes, {write: 'hanzi'});
+  assert.deepEqual(phrases[0].candidates[phrases[0].chosen], [1, 4, 5, 6, 7]);
+  assert.equal(phrases[0].mismatches[phrases[0].chosen], 0);
+  assert.deepEqual(locatePastedLyrics('略', [note('lve')], {write: 'hanzi'})[0].candidates, [[0]], 'lüe, lve and lue are one syllable');
+});
+
+test('finds a phrase with a typo or a missing syllable as a labelled near match', () => {
+  const notes = ['wo', 'liao', 'jie', 'mei', 'ge', 'ren', 'de', 'mi', 'mi'].map(note);
+  const typo = locatePastedLyrics('我了改每个人', notes, {write: 'hanzi'});
+  assert.deepEqual(typo[0].candidates[typo[0].chosen], [0, 1, 2, 3, 4, 5]);
+  assert.equal(typo[0].mismatches[typo[0].chosen], 1);
+  const missing = locatePastedLyrics('我解每个人的', notes, {write: 'pinyin'});
+  assert.deepEqual(missing[0].candidates[missing[0].chosen], [0, 2, 3, 4, 5, 6], 'the note sung without a pasted syllable keeps its lyric');
+  applyLocatedLyrics(notes, missing);
+  assert.deepEqual(notes.map(item => item.lyrics).slice(0, 7), ['wo', 'liao', 'jie', 'mei', 'ge', 'ren', 'de']);
+  assert.equal(locatePastedLyrics('火星', notes, {write: 'hanzi'})[0].chosen, -1, 'short phrases are never matched approximately');
+});

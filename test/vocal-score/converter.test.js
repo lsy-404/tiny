@@ -569,6 +569,34 @@ test('folds continuation notes into the previous syllable according to the merge
   assert.throws(() => createScore(project, { noteMerge: 'max' }), /noteMerge/);
 });
 
+test('keeps a monophonic line in one voice when short notes snap onto their neighbours', () => {
+  const twelfth = QUARTER / 12;
+  const notes = [
+    { onset: 0, duration: twelfth, pitch: 60, lyrics: 'xi' }, { onset: twelfth, duration: QUARTER - twelfth, pitch: 62, lyrics: '.iA N' },
+    { onset: QUARTER, duration: twelfth, pitch: 64, lyrics: '-' }, { onset: QUARTER + twelfth, duration: QUARTER * 2, pitch: 65, lyrics: 'chun' }
+  ];
+  const project = { title: 'Snap', tracks: [{ id: 'v', name: 'V', notes }], meters: [{ index: 0, numerator: 4, denominator: 4 }], tempos: [{ position: 0, bpm: 120 }], warnings: [] };
+  const result = createScore(project);
+  assert.equal(result.warnings.some(warning => warning.includes('voices')), false, 'snapped notes stay in one voice');
+  assert(result.warnings.includes('V: 2 very short note(s) merged into a neighbour at this rhythm grid.'));
+  assert.deepEqual(result.model.tracks[0].notes.map(note => [note.lyrics, note.pitch]), [['xi', 62], ['chun', 65]], 'the syllable comes from the earlier note, the pitch from the longer one');
+});
+
+test('ignores tuning parameters when pitch adjustment is off and keeps a given part order', () => {
+  const tuned = { onset: 0, duration: QUARTER, pitch: 60, lyrics: 'la', tuning: { detuneCents: 70, curvePointCount: 4, curveMode: 'cubic', curveRepresentativeCents: 0, curveApproximate: true } };
+  const project = { title: 'Tuning', tracks: [{ id: 'v', name: 'V', notes: [tuned] }], meters: [{ index: 0, numerator: 4, denominator: 4 }], tempos: [{ position: 0, bpm: 120 }], warnings: [] };
+  const off = createScore(project, { pitchAdjustment: { enabled: false, thresholdCents: 50 } });
+  assert.equal(off.model.tracks[0].notes[0].pitch, 60);
+  assert.equal(off.warnings.some(warning => /pitch curve|cent tuning/.test(warning)), false, 'no tuning warnings when parameters are ignored');
+  assert.equal(createScore(project).model.tracks[0].notes[0].pitch, 61, 'parameters move the note when considered');
+  const ensemble = { ...project, tracks: [
+    { id: 'vc', name: 'Cello', instrument: { order: 62, clef: 'bass' }, notes: [{ onset: 0, duration: QUARTER, pitch: 40, lyrics: '' }] },
+    { id: 'fl', name: 'Flute', instrument: { order: 11, clef: 'treble' }, notes: [{ onset: 0, duration: QUARTER, pitch: 72, lyrics: '' }] }
+  ] };
+  assert.deepEqual(createScore(ensemble).parts.map(part => part.name), ['Flute', 'Cello']);
+  assert.deepEqual(createScore(ensemble, { preserveOrder: true }).parts.map(part => part.name), ['Cello', 'Flute']);
+});
+
 const sampleFiles = (process.env.SVP_SAMPLE_FILES || '').split(';').filter(Boolean);
 if (!sampleFiles.length) {
   test('converts configured local SVP files when present', t => t.skip('Set SVP_SAMPLE_FILES to semicolon-separated local input paths.'));
@@ -588,7 +616,11 @@ for (const file of sampleFiles) {
     assert.equal(merged.stats.noteCount, original.stats.noteCount);
     assert.equal(merged.stats.measureCount, original.stats.measureCount);
     assert.deepEqual(signatures(merged), signatures(original));
-    assert.ok(merged.model.tracks.every(track => track.notes.every(note => note.voice === 1)));
-    assert.equal(merged.warnings.some(warning => warning.includes('overlapping notes')), false);
+    // A source track whose notes never overlap must stay in one voice after grid snapping; real chords may not.
+    const overlaps = notes => { let end = -Infinity; return [...notes].sort((a, b) => a.onset - b.onset).some(note => { const hit = note.onset < end; end = Math.max(end, note.onset + note.duration); return hit; }); };
+    const monophonic = new Set(project.tracks.filter(track => !overlaps(track.notes)).map(track => track.id));
+    assert.ok(monophonic.size > 0);
+    assert.ok(original.model.tracks.filter(track => monophonic.has(track.id)).every(track => track.notes.every(note => note.voice === 1)));
+    assert.equal(original.warnings.some(warning => project.tracks.some(track => monophonic.has(track.id) && warning.startsWith(`${track.name}: overlapping notes`))), false);
   });
 }
