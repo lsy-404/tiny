@@ -597,6 +597,37 @@ test('ignores tuning parameters when pitch adjustment is off and keeps a given p
   assert.deepEqual(createScore(ensemble, { preserveOrder: true }).parts.map(part => part.name), ['Cello', 'Flute']);
 });
 
+test('writes triplet beats under a 3:2 bracket and leaves straight rhythms alone', () => {
+  const third = QUARTER / 3;
+  const project = timeline => ({ title: 'Triplets', tracks: [{ id: 'v', name: 'V', notes: timeline.map(([onset, duration], index) => ({ onset, duration, pitch: 60 + index, lyrics: 'la' })) }], meters: [{ index: 0, numerator: 4, denominator: 4 }], tempos: [{ position: 0, bpm: 120 }], warnings: [] });
+  // A swung quarter–eighth triplet, three triplet eighths, two straight eighths and a quarter.
+  const swung = project([[0, 2 * third], [2 * third, third], [QUARTER, third], [QUARTER + third, third], [QUARTER + 2 * third, third], [QUARTER * 2, QUARTER / 2], [QUARTER * 2.5, QUARTER / 2], [QUARTER * 3, QUARTER]]);
+  assert(createScore(swung).warnings.includes('V: 5 note(s) shifted by grid quantization.'), 'triplets are opt-in');
+  const result = createScore(swung, { triplets: true });
+  assert.equal(result.warnings.some(warning => warning.includes('shifted')), false);
+  assert.deepEqual(result.triplets, { enabled: true, beatCount: 2 });
+  assert.equal(result.model.divisions, 48);
+  const notes = noteTags(result.xml);
+  const valueOf = note => `${note.match(/<type>([^<]+)<\/type>/)[1]}${note.includes('<time-modification>') ? '/3' : ''}`;
+  assert.deepEqual(notes.map(valueOf), ['quarter/3', 'eighth/3', 'eighth/3', 'eighth/3', 'eighth/3', 'eighth', 'eighth', 'quarter']);
+  assert.match(notes[0], /<duration>32<\/duration>.*<time-modification><actual-notes>3<\/actual-notes><normal-notes>2<\/normal-notes><\/time-modification>.*<tuplet type="start" bracket="yes"\/>/);
+  assert.match(notes[1], /<tuplet type="stop"\/>/);
+  assert.deepEqual(notes.slice(2, 5).map(beamsOf), ['1:begin', '1:continue', '1:end'], 'triplet eighths share one beam');
+  assert.deepEqual(notes.slice(5, 7).map(beamsOf), ['1:begin', '1:end']);
+  // A note crossing into the next triplet beat is tied, and rests inside triplet beats are triplet values too.
+  const crossing = noteTags(createScore(project([[0, third], [2 * third, 2 * third], [QUARTER * 2, QUARTER * 2]]), { triplets: true }).xml);
+  assert.deepEqual(crossing.map(note => `${note.includes('<rest/>') ? 'rest ' : ''}${valueOf(note)}`), ['eighth/3', 'rest eighth/3', 'eighth/3', 'eighth/3', 'rest quarter/3', 'half']);
+  assert.match(crossing[2], /<tie type="start"\/>.*<tuplet type="stop"\/>/);
+  assert.match(crossing[3], /<tie type="stop"\/>.*<tuplet type="start" bracket="yes"\/>/);
+  assert.match(crossing[4], /<tuplet type="stop"\/>/);
+  const straight = rhythmProject([[0.5], [0.5], [0.25], [0.25], [0.5], [0.75], [0.25], [1]]);
+  assert.equal(createScore(straight, { triplets: true }).xml, createScore(straight).xml, 'straight rhythms are written exactly as without triplets');
+  const late = QUARTER / 4 + QUARTER / 24;
+  const slightlyLate = project([[0, late], [late, QUARTER - late], [QUARTER, QUARTER * 3]]);
+  assert.equal(createScore(slightlyLate, { triplets: true }).triplets.beatCount, 0, 'a slightly late sixteenth does not become a triplet');
+  assert.throws(() => createScore(swung, { triplets: 'yes' }), /triplets/);
+});
+
 const sampleFiles = (process.env.SVP_SAMPLE_FILES || '').split(';').filter(Boolean);
 if (!sampleFiles.length) {
   test('converts configured local SVP files when present', t => t.skip('Set SVP_SAMPLE_FILES to semicolon-separated local input paths.'));
@@ -610,17 +641,19 @@ for (const file of sampleFiles) {
     const output = createScore(project, { trackIds: [project.tracks[0].id] });
     assert.ok(output.stats.noteCount > 0);
     assert.match(output.xml, /score-partwise/);
-    const original = createScore(project);
-    const merged = createScore(project, { mergeContinuations: true });
     const signatures = score => score.model.tracks.flatMap(track => track.notes.map(note => `${note.start}:${note.end}:${note.pitch}:${note.lyrics}:${note.sourceTrackId}`)).sort();
-    assert.equal(merged.stats.noteCount, original.stats.noteCount);
-    assert.equal(merged.stats.measureCount, original.stats.measureCount);
-    assert.deepEqual(signatures(merged), signatures(original));
-    // A source track whose notes never overlap must stay in one voice after grid snapping; real chords may not.
     const overlaps = notes => { let end = -Infinity; return [...notes].sort((a, b) => a.onset - b.onset).some(note => { const hit = note.onset < end; end = Math.max(end, note.onset + note.duration); return hit; }); };
     const monophonic = new Set(project.tracks.filter(track => !overlaps(track.notes)).map(track => track.id));
     assert.ok(monophonic.size > 0);
-    assert.ok(original.model.tracks.filter(track => monophonic.has(track.id)).every(track => track.notes.every(note => note.voice === 1)));
-    assert.equal(original.warnings.some(warning => project.tracks.some(track => monophonic.has(track.id) && warning.startsWith(`${track.name}: overlapping notes`))), false);
+    for (const triplets of [false, true]) {
+      const original = createScore(project, { triplets });
+      const merged = createScore(project, { triplets, mergeContinuations: true });
+      assert.equal(merged.stats.noteCount, original.stats.noteCount);
+      assert.equal(merged.stats.measureCount, original.stats.measureCount);
+      assert.deepEqual(signatures(merged), signatures(original));
+      // A source track whose notes never overlap must stay in one voice after grid snapping; real chords may not.
+      assert.ok(original.model.tracks.filter(track => monophonic.has(track.id)).every(track => track.notes.every(note => note.voice === 1)));
+      assert.equal(original.warnings.some(warning => project.tracks.some(track => monophonic.has(track.id) && warning.startsWith(`${track.name}: overlapping notes`))), false);
+    }
   });
 }

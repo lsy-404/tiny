@@ -28,3 +28,4 @@
 | 023 | [Feature] multi_format_import | 改名织音机，支持 UtaFormatix 全部输入、ACEP、MIDI、FL Studio 器乐总谱（Beta） | 用户要求与群聊反馈 | ✅ 已完成 |
 | 024 | [Feature] lyric_paste_and_note_merge | 粘贴歌词按句定位替换；合并连续音符低/中/高 | 用户反馈 | ✅ 已完成 |
 | 025 | [Feature] startup_parts_and_matching | 启动画面、声部排序改名、调校开关、调性与网格对齐修正、拼音定位加固 | 用户要求与花骨朵工程反馈 | 🔄 进行中 |
+| 026 | [Feature] triplets | 三连音记谱：按拍自适应量化、MusicXML 三连括号、简谱三连标记、识别三连音开关 | 用户要求（花骨朵大量三连音位置） | 🔄 进行中 |

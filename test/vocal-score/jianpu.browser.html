@@ -149,7 +149,21 @@
     assert(Math.abs(850 / 1000 - expandedHeight / expandedViewHeight) < 0.001, "rendered width and height keep the same scale against the viewBox");
     decoratePages(scaledContainer, { title: "Scaled OSMD Page", by: "Composer" });
     assert(Math.abs(Number(scaledPage.getAttribute("height")) - expandedHeight) < 0.001, "scaled height does not accumulate across repeated decoration");
-    document.querySelector("#result").textContent = "PASS: 102 bars and three voices, width-bounded packing, title and voice labels, annotations and musical changes, cross-page ties, rhythm marks, font and number options, safe lyrics and page decoration, and overlap rejection.";
+    const triplet = (step, duration, type, extra = "") => `<note><pitch><step>${step}</step><octave>4</octave></pitch><duration>${duration}</duration><type>${type}</type><time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification>${extra}</note>`;
+    const tripletXml = `<?xml version="1.0"?><score-partwise version="4.0"><part-list><score-part id="P1"><part-name>Lead</part-name></score-part></part-list><part id="P1"><measure number="1"><attributes><divisions>3</divisions><key><fifths>0</fifths></key><time><beats>4</beats><beat-type>4</beat-type></time></attributes>${triplet("C", 1, "eighth", '<beam number="1">begin</beam><notations><tuplet type="start" bracket="yes"/></notations>')}${triplet("D", 1, "eighth", '<beam number="1">continue</beam>')}${triplet("E", 1, "eighth", '<beam number="1">end</beam><notations><tuplet type="stop"/></notations>')}${triplet("F", 2, "quarter", '<notations><tuplet type="start" bracket="yes"/></notations>')}${triplet("G", 1, "eighth", '<notations><tuplet type="stop"/></notations>')}<note><pitch><step>A</step><octave>4</octave></pitch><duration>6</duration><type>half</type></note></measure></part></score-partwise>`;
+    const tripletContainer = document.createElement("div");
+    document.body.append(tripletContainer);
+    await renderJianpu(tripletXml, tripletContainer, { width: 800 });
+    const numbers = [...tripletContainer.querySelectorAll(".jianpu-tuplet-number")];
+    assert(numbers.length === 2 && numbers.every((number) => number.textContent === "3"), "each triplet group is marked with a 3");
+    assert(tripletContainer.querySelectorAll(".jianpu-tuplet").length === 2, "each triplet group gets one bracket");
+    const tripletNotes = [...tripletContainer.querySelectorAll(".jianpu-note")].map((note) => note.getBBox());
+    const firstBracket = tripletContainer.querySelector(".jianpu-tuplet").getBBox();
+    assert(firstBracket.x <= tripletNotes[0].x && firstBracket.x + firstBracket.width >= tripletNotes[2].x + tripletNotes[2].width, "the bracket spans its three notes");
+    assert(firstBracket.y + firstBracket.height < Math.min(...tripletNotes.map((note) => note.y)), "the bracket sits above the notes");
+    assert(tripletContainer.querySelectorAll(".jianpu-rhythm").length === 2, "triplet eighths share one underline; the lone eighth keeps its own");
+    tripletContainer.remove();
+    document.querySelector("#result").textContent = "PASS: 102 bars and three voices, width-bounded packing, title and voice labels, annotations and musical changes, cross-page ties, rhythm marks, triplet brackets, font and number options, safe lyrics and page decoration, and overlap rejection.";
   } catch (error) {
     document.querySelector("#result").textContent = `FAIL: ${error.message}`;
     throw error;
