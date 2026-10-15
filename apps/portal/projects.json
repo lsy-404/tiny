@@ -24,5 +24,18 @@
     "credit": "美术、设计、编码：武乙凌薇 · 数据处理：StarryMiko2233",
     "meta": "3D · 音频 · 5847 颗恒星",
     "action": "进入星图"
+  },
+  {
+    "slug": "vocal-score",
+    "path": "projects/vocal-score",
+    "kind": "tool",
+    "eyebrow": "人声谱工具",
+    "title": "声谱 · SVP 人声谱",
+    "description": "在浏览器本地编辑歌词并生成五线谱、简谱与 PDF；工程和设置保存在当前浏览器。",
+    "cover": "./assets/vocal-score.svg",
+    "coverAlt": "五线谱、音符与纸张插画",
+    "credit": "本地处理 · 使用 Vue、OpenSheetMusicDisplay 与 PDF.js",
+    "meta": "PDF · MusicXML · 简谱",
+    "action": "打开工具"
   }
 ]

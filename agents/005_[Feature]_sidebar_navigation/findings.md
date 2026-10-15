@@ -1,0 +1,3 @@
+- The main score area now contains only the compact toolbar, score metadata, notation/view options, status notices, and PDF preview.
+- Navigation state is local UI state; it does not modify project settings or trigger score rendering.
+- `ui-messages.js` contains converter warning/error translation logic; navigation copy belongs in i18n catalogs, so no converter-message logic change was needed.
