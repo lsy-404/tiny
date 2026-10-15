@@ -23,7 +23,7 @@ try {
     await page.waitForURL('**/projects/cassie/');
     await returnToHome(page, width);
 
-    const scoreCard = page.locator('.project-card').filter({ has: page.getByRole('heading', { name: /声谱|vocal score/i }) });
+    const scoreCard = page.locator('.project-card').filter({ has: page.getByRole('heading', { name: /织音机|sound loom/i }) });
     await scoreCard.getByRole('link').click();
     await page.waitForURL('**/projects/vocal-score/');
     await returnToHome(page, width);

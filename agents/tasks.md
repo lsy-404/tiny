@@ -23,3 +23,6 @@
 | 018 | [Feature] cassie_integration | CASSIE迁到子路径并加入主菜单返回入口 | 用户要求统一工具入口 | ✅ 已完成 |
 | 019 | [Feature] score_menu | 声谱四语主菜单入口 | 用户要求返回门户 | ✅ 已完成 |
 | 020 | [Verify] project_navigation | 项目卡片、资源与键盘导航验证 | 迁移需覆盖真实嵌套路由 | ✅ 已完成 |
+| 021 | [Feature] vocal_score_refresh | 人声谱 logo、精简文案与布局、SVG 直接预览 | 用户要求加 logo、去描述文本、优化布局、减少渲染时间 | ✅ 已完成 |
+| 022 | [Feature] notation_feedback | 连杠与按拍拼写、转调、渐变速、页边距 | 群聊试用反馈与用户要求 | ✅ 已完成 |
+| 023 | [Feature] multi_format_import | 改名织音机，支持 UtaFormatix 全部输入、ACEP、MIDI、FL Studio 器乐总谱（Beta） | 用户要求与群聊反馈 | 🔄 进行中 |

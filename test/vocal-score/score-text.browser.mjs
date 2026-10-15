@@ -11,7 +11,7 @@ try{
   const page=await browser.newPage({locale:'zh-CN',viewport:{width:1440,height:1080},acceptDownloads:true});
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   await page.goto(base);await page.waitForFunction(()=>!document.querySelector('#file-input')?.disabled);
-  const ready=async()=>{await page.locator('#pdf-button:enabled').waitFor({timeout:60000});await page.locator('.pdf-viewer canvas[data-rendered=true]').first().waitFor({timeout:30000});};
+  const ready=async()=>{await page.locator('#pdf-button:enabled').waitFor({timeout:60000});await page.locator('.score-viewer__sheet[data-rendered=true]').first().waitFor({timeout:30000});};
   await page.locator('#file-input').setInputFiles({name:'text-editing.svp',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(fixture))});await ready();
   const changeText=async(kind,text,index=0)=>{
     const target=page.locator(`.score-text-target[data-edit-kind="${kind}"]`).nth(index);
@@ -36,7 +36,7 @@ try{
   assert(await page.locator('.score-text-target[data-edit-kind=lyric]').count()>0,'Numbered notation also offers direct lyric editing.');
   await changeText('lyric','简谱字');
   await page.locator('.score-text-target[data-edit-kind=title]').first().click();await page.locator('.score-text-form input').fill('Wrong file');
-  await page.locator('#file-input').setInputFiles({name:'other.svp',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({...fixture,projectName:'Other file'}))});await ready();
+  await page.locator('#file-input').setInputFiles({name:'other.svp',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({...fixture,projectName:'Other file'}))});await page.waitForFunction(()=>document.querySelector('.file-item[aria-pressed=true]')?.textContent.includes('other.svp'));await ready();
   assert.equal(await page.locator('.score-text-form').count(),0,'Changing documents closes an unfinished edit.');
   assert.equal(await page.locator('#score-title').inputValue(),'Other file');
   await page.reload();await ready();await openSection(page,'files');await page.locator('.file-item').filter({hasText:'text-editing.svp'}).click();await ready();await openSection(page,'settings');
