@@ -85,6 +85,23 @@ try {
     const target = document.querySelector('.pdf-viewer__page[data-page-number="2"]');
     return target && Math.abs(target.getBoundingClientRect().top - viewer.getBoundingClientRect().top) < 40;
   });
+
+  await zoom.selectOption('fit');
+  await viewport.evaluate(element => { element.scrollTop = 0; });
+  await page.waitForFunction(() => document.querySelector('.pdf-viewer__page-count')?.textContent.includes('第 1 页'));
+  await pages.nth(1).evaluate(element => element.scrollIntoView({ block: 'center' }));
+  await page.waitForFunction(() => document.querySelector('.pdf-viewer__page-count')?.textContent.includes('第 2 页'));
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.waitForTimeout(100);
+  const toolbarGeometry = await page.evaluate(() => {
+    const navigation = document.querySelector('.pdf-viewer__navigation').getBoundingClientRect();
+    const zoomControl = document.querySelector('.pdf-viewer__zoom').getBoundingClientRect();
+    return { navigationRight: navigation.right, zoomLeft: zoomControl.left, toolbarRight: document.querySelector('.pdf-viewer__toolbar').getBoundingClientRect().right };
+  });
+  assert(toolbarGeometry.navigationRight <= toolbarGeometry.zoomLeft, 'mobile toolbar navigation and zoom do not overlap');
+  assert(toolbarGeometry.zoomLeft < toolbarGeometry.toolbarRight, 'mobile zoom control remains inside the toolbar');
+
   assert.deepEqual(errors, [], 'PDF.js scrolling and rendering produce no uncaught browser errors');
   process.stdout.write(JSON.stringify({ status: 'passed', pages: count, compactGapPx: gaps[0], releasedDistantCanvas: true }));
   await page.close();
