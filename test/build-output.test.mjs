@@ -1,4 +1,4 @@
-import { access, readFile, stat } from 'node:fs/promises';
+import { access, readFile, readdir, stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { join, resolve } from 'node:path';
 
@@ -61,12 +61,15 @@ if (!cassieFiles.some((file) => /worker/i.test(file) && /\.m?js$/.test(file))) {
 }
 const headersPath = join(output, '_headers');
 const headers = await readFile(headersPath, 'utf8');
-const cassieHeaderBlock = headers.split(/\r?\n(?=\/)/).find((block) => /^\/projects\/cassie(?:\/|$)/m.test(block));
-if (!cassieHeaderBlock || !/cross-origin-embedder-policy/i.test(cassieHeaderBlock) || !/cross-origin-opener-policy/i.test(cassieHeaderBlock)) {
-  throw new Error('The root _headers file is missing the CASSIE-only cross-origin isolation policy.');
+const headerRules = headers.split(/\r?\n/).filter((line) => line && !line.startsWith('#') && !/^\s/.test(line));
+if (!headerRules.length || headerRules.some((rule) => !rule.startsWith('/projects/cassie/'))) {
+  throw new Error('Every root _headers rule must be scoped under /projects/cassie/.');
 }
-if (/cross-origin-(?:embedder|opener)-policy/i.test(headers.replace(cassieHeaderBlock, ''))) {
-  throw new Error('The CASSIE isolation policy must be scoped to the CASSIE subpath.');
+if (!/content-security-policy\s*:/i.test(headers) || !/x-content-type-options\s*:\s*nosniff/i.test(headers)) {
+  throw new Error('The CASSIE-scoped headers must include CSP and nosniff.');
+}
+if (/cross-origin-(?:embedder|opener)-policy/i.test(headers)) {
+  throw new Error('The CASSIE deployment must not add cross-origin isolation headers.');
 }
 
 await Promise.all([

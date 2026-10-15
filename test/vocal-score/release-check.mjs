@@ -25,14 +25,30 @@ const cassieAssets=[...cassieHtml.matchAll(/(?:src|href)="([^"]+)"/g)]
   .map(asset=>cassie+asset.replace(/^\.\//,'').replace(/^\/projects\/cassie\//,''));
 assert(cassieAssets.some(file=>/\.m?js$/.test(file)),'CASSIE must emit an app bundle under its subpath.');
 assert(cassieAssets.some(file=>/\.css$/.test(file)),'CASSIE must emit its stylesheet under its subpath.');
-assert(cassieAssets.some(file=>/[-.][a-f0-9]{8,}\./i.test(file)),'CASSIE must use a content-hashed public asset.');
-const files=[...new Set([...existing,tool+'index.html',...toolAssets,...workers,cassie+'index.html',...cassieAssets])];
+assert(cassieAssets.some(file=>/-[A-Za-z0-9_-]{8}\./.test(file)),'CASSIE must emit an asset using Vite’s eight-character content hash.');
+const cassieRequired=[
+  'bank.json','phonemes.json','audio/cassie.opus','ffmpeg/manifest.json','licenses.html',
+].map(file=>cassie+file);
+const cassieAssetRoot=path.join(root,cassie,'assets');
+const cassieAssetEntries=await readdir(cassieAssetRoot,{recursive:true,withFileTypes:true});
+const cassieWorkerAssets=cassieAssetEntries
+  .filter(entry=>entry.isFile()&&/\.(?:m?js|wasm)$/i.test(entry.name))
+  .map(entry=>cassie+'assets/'+path.relative(cassieAssetRoot,entry.parentPath).split(path.sep).filter(Boolean).join('/')+(entry.parentPath===cassieAssetRoot?'':'/')+entry.name);
+assert(cassieWorkerAssets.some(file=>/worker/i.test(file)&&/\.m?js$/i.test(file)),'CASSIE must emit its JavaScript workers.');
+assert(cassieWorkerAssets.some(file=>/\.wasm$/i.test(file)),'CASSIE must emit its WebAssembly worker runtime.');
+const files=[...new Set([...existing,tool+'index.html',...toolAssets,...workers,cassie+'index.html',...cassieAssets,...cassieRequired,...cassieWorkerAssets])];
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
 let normalizedEdgeHtml=0;
 for(let offset=0;offset<files.length;offset+=4){
   await Promise.all(files.slice(offset,offset+4).map(async file=>{
     const response=await fetch(new URL(file,base));assert.equal(response.status,200,file);
-    if(/\.m?js$/.test(file))assert.match(response.headers.get('content-type')||'',/javascript/,`${file} MIME`);
+    const mime=response.headers.get('content-type')||'';
+    if(/\.html$/i.test(file))assert.match(mime,/text\/html/,`${file} MIME`);
+    if(/\.m?js$/i.test(file))assert.match(mime,/javascript/,`${file} MIME`);
+    if(/\.wasm$/i.test(file))assert.match(mime,/application\/wasm/,`${file} MIME`);
+    if(/\.json$/i.test(file))assert.match(mime,/application\/json/,`${file} MIME`);
+    if(/\.opus$/i.test(file))assert.match(mime,/audio\//,`${file} MIME`);
+    if(/\.css$/i.test(file))assert.match(mime,/text\/css/,`${file} MIME`);
     let actual=Buffer.from(await response.arrayBuffer()),expected=await readFile(path.join(root,file));
     if(file.endsWith('.html')){
       const html=actual.toString('utf8');

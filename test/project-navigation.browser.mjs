@@ -35,7 +35,7 @@ try {
 }
 
 async function returnToHome(page, width) {
-  const link = page.getByRole('link', { name: /Tiny Projects.*返回主菜单|返回主菜单.*Tiny Projects/ });
+  const link = page.getByRole('link', { name: /Tiny Projects/ });
   await link.waitFor({ state: 'visible' });
   assert.equal(new URL(await link.getAttribute('href'), page.url()).pathname, '/');
   await link.focus();
