@@ -6,6 +6,9 @@ const root = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
 const config = JSON.parse(await readFile(join(root, 'wrangler.jsonc'), 'utf8'));
 
 if (config.name !== 'minigames') throw new Error('The Worker name must remain minigames.');
+if (config.routes?.length !== 1 || config.routes[0]?.pattern !== 'tiny.leisiyu.dev' || config.routes[0]?.custom_domain !== true) {
+  throw new Error('The Worker must expose only the tiny.leisiyu.dev custom domain route.');
+}
 if (config.assets?.directory !== './dist') throw new Error('The Worker must publish dist/ as static assets.');
 if (config.assets?.html_handling !== 'auto-trailing-slash') {
   throw new Error('Directory-based game entry pages need automatic trailing-slash handling.');

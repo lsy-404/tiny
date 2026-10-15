@@ -4,7 +4,7 @@ import {readFile,readdir} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 
-const base=process.env.RELEASE_URL||'https://mini.leisiyu.dev/';
+const base=process.env.RELEASE_URL||'https://tiny.leisiyu.dev/';
 const root=fileURLToPath(new URL('../../dist/',import.meta.url));
 const existing=[
   'index.html','app.js','styles.css','portal-logo.svg','projects.json',
