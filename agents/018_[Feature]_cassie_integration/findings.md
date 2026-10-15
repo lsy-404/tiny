@@ -12,3 +12,5 @@
 - 新导航测试用 **/ 等待跳转时误匹配当前子路径 -> 改为URL pathname严格等于/，保留返回根目录断言 -> 桌面和390px键盘导航通过。
 - 初次pnpm check缺少进程级SVP/Playwright环境变量导致2项跳过 -> 仅补跑对应converter与staff文件，2真实样本和OSMD浏览器断言均通过；无残留跳过。
 - CASSIE原审计约定local-only，子agent首次强制加入公开commit -> 发布前修订未推送commit，保持审计本地忽略；生产代码与测试字节未变。最终上游main4bee5b5。
+- 线上FFmpeg清单第一分片校验值与Windows本地不同 -> 对比8,388,608字节，仅gzip头第9字节不同（Linux=3、Windows=10），原始WASM SHA完全一致 -> 发布检查只归一化该OS元数据，同时保留各分片公开SHA、其余所有压缩字节、大小和解压后核心SHA严格验证。改动payload并同步伪造分片清单SHA的负控制仍被拒绝。
+- 原域名使用Cloudflare原生Single Redirect，规则3e67ce332de34b37804683cd03b2c1c0，仅匹配cassie.leisiyu.dev，目标 `concat("https://tiny.leisiyu.dev/projects/cassie", http.request.uri.path)`，301且保留查询。原Worker/DNS保留，不删除源资产。
