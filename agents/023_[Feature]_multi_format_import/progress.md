@@ -16,3 +16,5 @@
 - 构建（含 CASSIE）成功，每种格式独立按需分块；pnpm run test：vocal-score+importers 138 通过、门户测试通过。
 - 浏览器：continuous-preview、pdf、score-text（修竞态后）、state、editor、jianpu、storage、formats（含 8 个真实样本）、project-navigation、staff-layout 全部通过。
 - README（工具与根目录）更新格式、器乐总谱、致谢与样本验证说明。
+- 提交 62f6d3c（feature/vocal-score-refresh，已推送）；--no-ff 合并为 main ae51baf 并推送。Workers Builds: minigames 成功。
+- 线上验证（https://tiny.leisiyu.dev/）：页面标题“织音机 · Sound Loom | Tiny Projects”；release-check 通过（47 个文件哈希一致、4 个项目路由）；formats.browser.mjs 在线上导入 8 个真实工程全部通过（ACEP 1.2 s、SVP 0.8 s、FLP 1.3–2.8 s）；project-navigation 与 pdf.browser（5 种纸张 + 真实工程）在线上通过。

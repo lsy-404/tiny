@@ -11,4 +11,4 @@
 - [x] 并行实现解析器：ACEP/MIDI/VOCALOID MIDI/VSQ；VSQX/VPR/CCS/MusicXML/UfData；UST/USTX/S5P/PPSF；DV/TSSLN；FLP
 - [x] 集成：注册表文件名核对、package.json 测试脚本加入 importers、构建
 - [x] 真实样本：ACEP、6 个 FLP、SVP 在浏览器里排版检查
-- [ ] 全量测试、提交到功能分支、发布预览站点
+- [x] 全量测试、提交、合并 main 并验证线上
