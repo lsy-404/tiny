@@ -14,5 +14,5 @@
 | 009 | [Feature] score_text_editing | 谱面直接编辑文字 | 用户要求点击谱面改字 | ✅ 已完成 |
 | 010 | [Feature] pinyin_matching | 汉字按拼音匹配补字 | 用户澄清含多音字与局部匹配 | ✅ 已完成 |
 | 011 | [BugFix] staff_note_mapping | 多小节来源与唯一音符标识 | 防止同音同词编辑错误 | ✅ 已完成 |
-| 012 | [Verify] integrated_release | 集成回归与操作文档 | 全功能和旧门户发布检查 | 🔄 进行中 |
-| 013 | [Fix] windows_test_paths | 修复旧测试Windows文件路径 | 保持完整断言并跑通发布检查 | 🔄 进行中 |
+| 012 | [Verify] integrated_release | 集成回归与操作文档 | 全功能和旧门户发布检查 | ✅ 已完成 |
+| 013 | [Fix] windows_test_paths | 修复旧测试Windows文件路径 | 保持完整断言并跑通发布检查 | ✅ 已完成 |
