@@ -20,4 +20,6 @@ test('edits the precise source note when tracks repeat the same lyric',()=>{
   assert(applyScoreTextEdit(document,{kind:'header'},'New'));assert.equal(document.settings.header,'New');
   assert(applyScoreTextEdit(document,{kind:'by'},'New by'));assert.equal(document.settings.by,'New by');
   assert(applyScoreTextEdit(document,{kind:'track-name',trackId:'b'},'Voice'));assert.equal(document.project.tracks[1].name,'Voice');
+  assert.equal(applyScoreTextEdit(document,{kind:'title',documentId:'different'},'Wrong file'),false);
+  assert.equal(document.title,'');
 });

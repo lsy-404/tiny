@@ -16,7 +16,8 @@ if (!/<link\s+rel="stylesheet"\s+href="\.\/styles\.css">/.test(html)) throw new 
 if (!/<script\s+src="\.\/game\.js"><\/script>/.test(html)) throw new Error('Cassandri HTML must load game.js as a classic script.');
 if (/<style[\s>]/i.test(html)) throw new Error('Cassandri HTML must not retain inline style blocks.');
 if (/<script\s*>/i.test(html)) throw new Error('Cassandri HTML must not retain an inline gameplay script.');
-await run('npm', ['run', 'build'], { cwd: root });
+await run(process.execPath, [join(root,'node_modules','vite','bin','vite.js'),'build','apps/vocal-score'], { cwd: root });
+await run(process.execPath, [join(root,'scripts','build.mjs')], { cwd: root });
 const distDir = join(root, 'dist', 'games', 'cassandri-legend');
 for (const asset of ['index.html', 'styles.css', 'game.js']) await access(join(distDir, asset));
 const built = await readFile(join(distDir, 'index.html'), 'utf8');
