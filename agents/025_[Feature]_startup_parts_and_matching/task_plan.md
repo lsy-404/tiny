@@ -9,4 +9,4 @@
 - [x] 考虑调校参数开关（useTuning 默认关），关闭时不产生调校警告
 - [x] 声部列表：拖动、上下按钮排序、改名；createScore preserveOrder
 - [x] 测试、i18n、README
-- [ ] 提交与发布（待用户确认）
+- [x] 提交与发布（已合并 main 并线上验证）

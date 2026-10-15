@@ -5,3 +5,4 @@
 - App：triplets 默认 true，进入转换键；“识别三连音”复选框；layout.css；i18n 四语。
 - 测试：converter 35（含三连音用例；样本测试对三连音开/关都验证合并不变式与单声部）；pnpm run test 147 通过（1 项无 Playwright 跳过）；jianpu.browser.html 新增三连音括号检查。
 - 浏览器：continuous-preview、pdf、score-text、state、editor、jianpu（含三连音括号）、storage、formats（含花骨朵与完美友人样本）、project-navigation、staff-layout 全部通过；实测花骨朵五线谱 OSMD 三连括号正常、简谱（单选 main）173 组三连标记，无页面错误。
+- 线上验证（tiny.leisiyu.dev，main 78be8df，Workers Builds minigames 成功，入口 index-DMlcKWzW.js 与本地构建一致）：release-check 通过（47 个文件哈希）；project-navigation、editor、formats（含花骨朵、完美友人样本）、continuous-preview、score-text 通过；花骨朵单选 main：263 个移位、简谱 173 组三连、识别三连音默认开、无页面错误。
