@@ -6,7 +6,7 @@
   "preview_urls": true,
   "routes": [
     {
-      "pattern": "games.leisiyu.dev",
+      "pattern": "mini.leisiyu.dev",
       "custom_domain": true
     }
   ],

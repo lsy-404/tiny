@@ -1,6 +1,7 @@
 [
   {
     "slug": "cassandri-legend",
+    "path": "games/cassandri-legend",
     "kind": "game",
     "eyebrow": "文字冒险 RPG",
     "title": "卡桑德里传说",
@@ -13,6 +14,7 @@
   },
   {
     "slug": "ten-light-years",
+    "path": "games/ten-light-years",
     "kind": "experience",
     "eyebrow": "互动星图",
     "title": "十光年的距离",

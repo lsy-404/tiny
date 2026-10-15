@@ -86,13 +86,13 @@ h1 {
   white-space: nowrap;
 }
 
-.game-grid {
+.project-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
-.game-card {
+.project-card {
   position: relative;
   display: flex;
   isolation: isolate;
@@ -105,10 +105,10 @@ h1 {
   transition: border-color .18s ease, transform .18s ease;
 }
 
-.game-card-2 { background: var(--surface-alt); }
-.game-card:hover { border-color: rgba(240, 239, 235, 0.42); transform: translateY(-2px); }
+.project-card-2 { background: var(--surface-alt); }
+.project-card:hover { border-color: rgba(240, 239, 235, 0.42); transform: translateY(-2px); }
 
-.game-card > :not(.card-cover) {
+.project-card > :not(.card-cover) {
   position: relative;
   z-index: 1;
 }
@@ -134,7 +134,7 @@ h1 {
   letter-spacing: .09em;
 }
 
-.game-card h3 {
+.project-card h3 {
   max-width: 10ch;
   margin: auto 0 1rem;
   font-size: clamp(2rem, 4vw, 3rem);
@@ -201,12 +201,12 @@ h1 {
 @media (max-width: 680px) {
   .shell { width: min(100% - 32px, 960px); }
   .collection { padding-top: 3.5rem; }
-  .game-grid { grid-template-columns: 1fr; }
-  .game-card { min-height: 285px; }
+  .project-grid { grid-template-columns: 1fr; }
+  .project-card { min-height: 285px; }
 }
 
 @media (max-width: 420px) {
   .collection { padding-top: 2.5rem; }
-  .game-card { min-height: 250px; }
+  .project-card { min-height: 250px; }
   .card-cover { width: 62%; opacity: .48; }
 }

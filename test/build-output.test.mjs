@@ -4,7 +4,7 @@ import { join, resolve } from 'node:path';
 
 const root = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
 const output = join(root, 'dist');
-const catalog = JSON.parse(await readFile(join(root, 'apps', 'portal', 'games.json'), 'utf8'));
+const catalog = JSON.parse(await readFile(join(root, 'apps', 'portal', 'projects.json'), 'utf8'));
 const expectedCredits = new Map([
   ['cassandri-legend', '主创：槃清 · 编码：武乙凌薇'],
   ['ten-light-years', '美术、设计、编码：武乙凌薇 · 数据处理：StarryMiko2233']
@@ -19,23 +19,23 @@ await Promise.all([
   mustExist(join(output, 'index.html')),
   mustExist(join(output, 'styles.css')),
   mustExist(join(output, 'app.js')),
-  mustExist(join(output, 'games.json'))
+  mustExist(join(output, 'projects.json'))
 ]);
 
-for (const game of catalog) {
-  const entry = join(output, 'games', game.slug, 'index.html');
-  const sourceReadme = join(root, 'games', game.slug, 'README.md');
-  const outputReadme = join(output, 'games', game.slug, 'README.md');
+for (const project of catalog) {
+  const entry = join(output, project.path, 'index.html');
   await mustExist(entry);
-  await mustExist(sourceReadme);
-  await mustExist(outputReadme);
   if (!(await stat(entry)).isFile()) throw new Error(`Expected a file: ${entry}`);
-  if (!game.credit) throw new Error(`Catalog entry ${game.slug} is missing its creator credit.`);
-  if (game.credit !== expectedCredits.get(game.slug)) {
-    throw new Error(`Catalog entry ${game.slug} has an unexpected creator credit.`);
-  }
-  if (await readFile(sourceReadme, 'utf8') !== await readFile(outputReadme, 'utf8')) {
-    throw new Error(`The ${game.slug} README was not preserved in the build output.`);
+  if (!project.credit) throw new Error(`Catalog entry ${project.slug} is missing its creator credit.`);
+  if (expectedCredits.has(project.slug)) {
+    if (project.credit !== expectedCredits.get(project.slug)) {
+      throw new Error(`Catalog entry ${project.slug} has an unexpected creator credit.`);
+    }
+    const sourceReadme = join(root, project.path, 'README.md');
+    const outputReadme = join(output, project.path, 'README.md');
+    if (await readFile(sourceReadme, 'utf8') !== await readFile(outputReadme, 'utf8')) {
+      throw new Error(`The ${project.slug} README was not preserved in the build output.`);
+    }
   }
 }
 
@@ -84,10 +84,10 @@ if (!tenLightYears.includes('viewport-fit=cover') || !tenLightYears.includes('@m
 if (cassandri.includes('archive-exit') || tenLightYears.includes('archive-exit')) {
   throw new Error('A game exit control must be located in its settings menu, not fixed to the page.');
 }
-if (!cassandri.includes('id="btnExitToPortal"') || !cassandri.includes('href="../../"') || !cassandri.includes('返回迷你游戏')) {
+if (!cassandri.includes('id="btnExitToPortal"') || !cassandri.includes('href="../../"') || !cassandri.includes('返回迷你项目')) {
   throw new Error('Cassandri Legend is missing its settings-menu exit control.');
 }
-if (!tenLightYears.includes('id="exit-game"') || !tenLightYears.includes('href="../../"') || !tenLightYears.includes('返回迷你游戏')) {
+if (!tenLightYears.includes('id="exit-game"') || !tenLightYears.includes('href="../../"') || !tenLightYears.includes('返回迷你项目')) {
   throw new Error('Ten Light Years is missing its settings-menu exit control.');
 }
 const cassandriMenu = [
@@ -112,20 +112,20 @@ if (!/<h3>潘多拉之盒<\/h3>[\s\S]*<h3>大记忆消失术<\/h3>/.test(cassand
 }
 
 const home = await readFile(join(output, 'index.html'), 'utf8');
-if (!home.includes('game-grid') || !home.includes('app.js') || !home.includes('迷你游戏') || !home.includes('id="about"') || !home.includes('本站作者：Siyu Lei')) {
-  throw new Error('The portal home page is missing its game list or concise about information.');
+if (!home.includes('project-grid') || !home.includes('app.js') || !home.includes('迷你项目') || !home.includes('id="about"') || !home.includes('本站作者：Siyu Lei')) {
+  throw new Error('The portal home page is missing its project list or concise about information.');
 }
 if (home.includes('收录') || home.includes('静态发布') || home.includes('关于本站')) {
-  throw new Error('The portal home page contains content outside the game list.');
+  throw new Error('The portal home page contains content outside the project list.');
 }
 
 const portalScript = await readFile(join(output, 'app.js'), 'utf8');
-if (portalScript.includes('收录') || !portalScript.includes('款游戏')) {
-  throw new Error('The portal game count does not match the simplified wording.');
+if (portalScript.includes('收录') || !portalScript.includes('个项目')) {
+  throw new Error('The portal project count does not match the simplified wording.');
 }
 const portalStyles = await readFile(join(output, 'styles.css'), 'utf8');
 if (!portalStyles.includes('min-height: 44px') || !portalStyles.includes('@media (max-width: 680px)')) {
   throw new Error('The portal is missing its mobile card layout or tap-target sizing.');
 }
 
-console.log(`Verified ${catalog.length} game entries and the portal shell.`);
+console.log(`Verified ${catalog.length} project entries and the portal shell.`);
