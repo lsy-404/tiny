@@ -1,0 +1,5 @@
+- Replaced the fixed settings stack with five accessible sidebar sections: files, score settings, analysis, lyrics, and pitch tuning.
+- Kept existing control IDs and moved the analysis, lyric editor, and tuning controls out of the score column.
+- Added a desktop collapse rail and a mobile drawer with close-on-selection and Escape handling.
+- Added zh-CN, English, Japanese, and Korean labels for navigation and score-text editing, as requested for the upcoming in-score editor.
+- Validation passed: `pnpm run build`; i18n/ui-messages test; real Chromium navigation/collapse/mobile interactions reported no page errors.
