@@ -65,12 +65,12 @@ test('App and lyric editor messages exist in all locales and resolve their place
     '保存失败；请保留原文件并检查浏览器存储空间。', '移除失败，请重试。',
     '无法读取浏览器存储；请检查浏览器的数据权限。', '（异词）', '和弦为自动推测（?）',
     'lyricEditor.notes', 'lyricEditor.position', 'lyricEditor.countOver', 'lyricEditor.countUnder',
-    'lyricEditor.clearNote', 'lyricEditor.restoreNote', '汉字替换拼音',
+    'lyricEditor.clearNote', 'lyricEditor.restoreNote', 'lyricEditor.writeTyped', 'lyricEditor.writePinyin', 'lyricEditor.writeHanzi', 'lyricEditor.locatedCount', 'lyricEditor.notFound', 'lyricEditor.occurrence', '合并连续音符', '不合并', '低 · 同音延长', '中 · 含元音续唱', '高 · 含短装饰音', '{count} 个续唱音符并入前一字',
     '乐谱预览', '上一页', '下一页', '适合页面', '第 {page} 页，共 {total} 页',
     '下载 PDF', '方向', '横向', '纵向', '纸张', '缩放', '适合页宽',
     '正在恢复文件…', '正在保存…', '已保存在此浏览器', '已移除'
   ];
-  const params = {format: 'MIDI', detail: '', name: 'a.txt', measure: 9, key: 'E♭ / c', parts: 2, count: 3, range: 'C3–C5', shift: '+1', length: 4, name: 'Voice', percent: 88, bar: 2, beat: 3, difference: 1, index: 5};
+  const params = {located: 1, phrases: 2, notes: 4, format: 'MIDI', detail: '', name: 'a.txt', measure: 9, key: 'E♭ / c', parts: 2, count: 3, range: 'C3–C5', shift: '+1', length: 4, name: 'Voice', percent: 88, bar: 2, beat: 3, difference: 1, index: 5};
 
   setLanguage('zh-CN');
   assert.equal(t('lyricEditor.notes'), '音符歌词');

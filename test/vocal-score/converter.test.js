@@ -556,6 +556,19 @@ test('lays out instrumental tracks as a score with chords, clefs and unpitched p
   assert.deepEqual(result.model.tracks.map(item => item.clef), ['treble', 'percussion', 'bass']);
 });
 
+test('folds continuation notes into the previous syllable according to the merge level', () => {
+  // la, "-" at the same pitch, the vowel "a" sung again lower then held, a sixteenth "-" flick, then the next syllable.
+  const notes = [[0, 1, 60, 'la'], [1, 1, 60, '-'], [2, 1, 62, 'a'], [3, 1, 62, 'a'], [4, 0.25, 67, '-'], [4.25, 0.75, 65, 'lo']];
+  const project = { title: 'Merge', tracks: [{ id: 'v', name: 'V', notes: notes.map(([onset, duration, pitch, lyrics]) => ({ onset: QUARTER * onset, duration: QUARTER * duration, pitch, lyrics })) }], meters: [{ index: 0, numerator: 4, denominator: 4 }], tempos: [{ position: 0, bpm: 120 }], warnings: [] };
+  const results = Object.fromEntries(['none', 'low', 'medium', 'high'].map(level => [level, createScore(project, { noteMerge: level })]));
+  assert.deepEqual(Object.values(results).map(result => result.noteMerge.mergedCount), [0, 1, 3, 4]);
+  assert.deepEqual(Object.values(results).map(result => result.stats.noteCount), [6, 5, 4, 3]);
+  assert.match(results.low.xml, /<duration>32<\/duration><voice>1<\/voice><type>half<\/type>.*?<text>la<\/text>/, 'la and its same-pitch extension become one half note');
+  assert.match(results.low.xml, /<text>a<\/text>/, 'low keeps a repeated vowel as written');
+  assert.doesNotMatch(results.medium.xml, /<text>a<\/text>/, 'medium sings the repeated vowel as a melisma of la');
+  assert.throws(() => createScore(project, { noteMerge: 'max' }), /noteMerge/);
+});
+
 const sampleFiles = (process.env.SVP_SAMPLE_FILES || '').split(';').filter(Boolean);
 if (!sampleFiles.length) {
   test('converts configured local SVP files when present', t => t.skip('Set SVP_SAMPLE_FILES to semicolon-separated local input paths.'));

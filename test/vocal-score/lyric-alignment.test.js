@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {applyHanziMatch, matchHanziLyrics, normalizePinyin} from '../../apps/vocal-score/src/lib/lyric-alignment.js';
+import {applyHanziMatch, applyLocatedLyrics, locatePastedLyrics, matchHanziLyrics, normalizePinyin} from '../../apps/vocal-score/src/lib/lyric-alignment.js';
 
 const note = lyrics => ({lyrics, onset: 0, duration: 100, pitch: 60});
 
@@ -51,4 +51,31 @@ test('replaces only matched lyric notes and preserves their timing and pitch', (
   assert.equal(applyHanziMatch(notes, match), true);
   assert.deepEqual(notes.map(item => item.lyrics), ['你', '-', '好', '']);
   assert.deepEqual(notes.map(({onset, duration, pitch}) => ({onset, duration, pitch})), beforeTiming);
+});
+
+test('locates a pasted phrase in the existing lyrics instead of replacing from the first note', () => {
+  const notes = ['你', '总', '是', '不', '肯', '承', '认', '-', '沉', '溺'].map(note);
+  const phrases = locatePastedLyrics('不肯承认', notes, {write: 'pinyin'});
+  assert.deepEqual(phrases.map(phrase => [phrase.candidates[phrase.chosen], phrase.tokens.map(token => token.value)]), [[[3, 4, 5, 6], ['bu', 'ken', 'cheng', 'ren']]]);
+  assert.equal(applyLocatedLyrics(notes, phrases), 4);
+  assert.deepEqual(notes.map(item => item.lyrics), ['你', '总', '是', 'bu', 'ken', 'cheng', 'ren', '-', '沉', '溺']);
+});
+
+test('follows the pasted order through repeated phrases and honours a chosen occurrence', () => {
+  const notes = ['ni', 'zong', 'shi', 'chen', 'ni', 'zai', 'ni', 'zong', 'shi'].map(note);
+  const ordered = locatePastedLyrics('你总是\n沉溺在，你总是', notes, {write: 'hanzi'});
+  assert.deepEqual(ordered.map(phrase => phrase.candidates[phrase.chosen]), [[0, 1, 2], [3, 4, 5], [6, 7, 8]]);
+  const chosen = locatePastedLyrics('你总是', notes, {write: 'hanzi', choices: {0: 1}});
+  assert.deepEqual(chosen[0].candidates, [[0, 1, 2], [6, 7, 8]]);
+  assert.deepEqual(chosen[0].candidates[chosen[0].chosen], [6, 7, 8]);
+});
+
+test('keeps typed words, falls back to other polyphonic readings, and reports phrases it cannot find', () => {
+  const notes = ['la', 'zhong', 'qing'].map(note);
+  const typed = locatePastedLyrics('zhong qing', notes);
+  assert.deepEqual(typed.map(phrase => [phrase.candidates[phrase.chosen], phrase.tokens.map(token => token.value)]), [[[1, 2], ['zhong', 'qing']]]);
+  assert.deepEqual(locatePastedLyrics('重庆', notes, {write: 'hanzi'})[0].candidates, [[1, 2]], 'chong qing in context, zhong as another reading of 重');
+  const missing = locatePastedLyrics('火星', notes, {write: 'hanzi'});
+  assert.equal(missing[0].chosen, -1);
+  assert.equal(applyLocatedLyrics(notes, missing), 0);
 });
