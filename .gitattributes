@@ -1,0 +1,2 @@
+* text=auto eol=lf
+apps/vocal-score/public/vendor/*.min.js -whitespace

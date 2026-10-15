@@ -1,0 +1,38 @@
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {readFile,readdir} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import path from 'node:path';
+
+const base=process.env.RELEASE_URL||'https://mini.leisiyu.dev/';
+const root=fileURLToPath(new URL('../../dist/',import.meta.url));
+const existing=[
+  'index.html','app.js','styles.css','portal-logo.svg','projects.json',
+  'games/cassandri-legend/index.html','games/cassandri-legend/game.js','games/cassandri-legend/styles.css','games/cassandri-legend/favicon.svg','games/cassandri-legend/assets/cover.png','games/cassandri-legend/fonts/fusion-pixel-12px-proportional-zh_hans.otf.woff2',
+  'games/ten-light-years/index.html','games/ten-light-years/main.js','games/ten-light-years/icon.svg','games/ten-light-years/assets/preview.png','games/ten-light-years/vendor/three.module.js',
+  ...['sizes.json','tracks.json','stars.bin','edges.bin','edge_weights.bin'].map(file=>`games/ten-light-years/data/${file}`),
+];
+const tool='projects/vocal-score/';
+const html=await readFile(path.join(root,tool,'index.html'),'utf8');
+const toolAssets=[...html.matchAll(/(?:src|href)="\.\/([^"]+)"/g)].map(match=>tool+match[1]);
+const workers=(await readdir(path.join(root,tool,'assets'))).filter(file=>/^pdf\.worker[.-]/.test(file)).map(file=>`${tool}assets/${file}`);
+assert.equal(workers.length,2,'Both local PDF generation and PDF.js workers must be bundled.');
+const files=[...new Set([...existing,tool+'index.html',...toolAssets,...workers])];
+const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
+for(let offset=0;offset<files.length;offset+=4){
+  await Promise.all(files.slice(offset,offset+4).map(async file=>{
+    const response=await fetch(new URL(file,base));assert.equal(response.status,200,file);
+    if(/\.m?js$/.test(file))assert.match(response.headers.get('content-type')||'',/javascript/,`${file} MIME`);
+    const actual=Buffer.from(await response.arrayBuffer()),expected=await readFile(path.join(root,file));
+    assert.equal(digest(actual),digest(expected),`${file} differs from verified build`);
+  }));
+}
+for(const route of ['games/cassandri-legend','games/ten-light-years','projects/vocal-score']){
+  const response=await fetch(new URL(route,base),{redirect:'manual'});assert.equal(response.status,307,route);assert(new URL(response.headers.get('location'),base).pathname.endsWith(route+'/'));
+}
+for(const name of ['star-wish','star-lalala']){
+  const response=await fetch(new URL(`games/ten-light-years/audio/${name}.m4a`,base),{method:'HEAD'});assert.equal(response.status,200);assert.match(response.headers.get('content-type')||'',/audio/);
+}
+const catalog=await(await fetch(new URL('projects.json',base))).json();
+assert.equal(catalog.length,3);assert(catalog.some(project=>project.path===tool.slice(0,-1)&&project.kind==='tool'));
+console.log(JSON.stringify({status:'passed',verifiedFileHashes:files.length,canonicalRoutes:3,audioHeadChecks:2,projects:catalog.length}));
