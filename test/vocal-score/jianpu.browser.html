@@ -24,7 +24,7 @@
     const half = index === 1;
     const notes = change
       ? `<note><pitch><step>C</step><octave>4</octave></pitch><duration>3</duration><type>quarter</type><dot/><lyric><syllabic>single</syllabic><text>${lyric}</text></lyric></note><note><rest/><duration>2</duration><type>quarter</type></note><note><pitch><step>G</step><octave>3</octave></pitch><duration>1</duration><type>eighth</type></note>`
-      : `<note><pitch><step>C</step><octave>4</octave></pitch><duration>${half ? 4 : 2}</duration><type>${half ? "half" : "quarter"}</type>${tieStart ? `<tie type="start"/>` : ""}${tieStop ? `<tie type="stop"/>` : ""}<lyric><syllabic>single</syllabic><text>${lyric}</text></lyric></note><note><pitch><step>D</step><octave>4</octave></pitch><duration>2</duration><type>quarter</type></note><note><pitch><step>E</step><octave>4</octave></pitch><duration>2</duration><type>quarter</type></note><note><pitch><step>F</step><alter>1</alter><octave>4</octave></pitch><duration>2</duration><type>quarter</type></note>`;
+      : `<note ${index === 1 ? 'id="svp-n0-0-s0"' : ''}><pitch><step>C</step><octave>4</octave></pitch><duration>${half ? 4 : 2}</duration><type>${half ? "half" : "quarter"}</type>${tieStart ? `<tie type="start"/>` : ""}${tieStop ? `<tie type="stop"/>` : ""}<lyric><syllabic>single</syllabic><text>${lyric}</text></lyric></note><note><pitch><step>D</step><octave>4</octave></pitch><duration>2</duration><type>quarter</type></note><note><pitch><step>E</step><octave>4</octave></pitch><duration>2</duration><type>quarter</type></note><note><pitch><step>F</step><alter>1</alter><octave>4</octave></pitch><duration>2</duration><type>quarter</type></note>`;
     const annotation = index === 1 ? `<direction placement="above"><direction-type><words font-size="10">A1 / C ? / 和弦为自动推测（?）</words></direction-type><offset>1</offset></direction>` : "";
     return `<measure number="${index}">${attributes}${annotation}${notes}</measure>`;
   };
@@ -43,7 +43,8 @@
   const xml = `<?xml version="1.0"?><score-partwise version="4.0"><work><work-title>Fixture Score</work-title></work><part-list><score-part id="P1"><part-name>Lead</part-name></score-part><score-part id="P2"><part-name>Harmony</part-name></score-part><score-part id="P3"><part-name>Bass</part-name></score-part></part-list><part id="P1">${measures}</part>${otherParts}</score-partwise>`;
   try {
     const container = document.querySelector("#score");
-    const { svg, svgs, warnings } = await renderJianpu(xml, container, { width: 320 });
+    const model = { tracks: [{ id: "lead-id", notes: [{ sourceTrackIndex: 0, sourceNoteIndex: 0, sourceTrackId: "lead-id" }] }] };
+    const { svg, svgs, warnings } = await renderJianpu(xml, container, { width: 320, model });
     assert(svg === svgs[0], "svg must remain the first-page export handle");
     assert(svgs.length === 34, `expected 34 bounded pages for 102 bars, received ${svgs.length}`);
     assert(svgs.every((page) => page.viewBox.baseVal.width === 320), "page width must stay within the requested width");
@@ -54,6 +55,9 @@
       return nextBar === undefined || bounds.x + bounds.width <= nextBar + 1;
     })), "note glyphs must stay inside their measure bars");
     assert(container.textContent.includes("Fixture Score"), "title must be rendered");
+    const mappedLyric = container.querySelector('[data-edit-kind="lyric"]');
+    assert(mappedLyric?.getAttribute("data-track-id") === "lead-id" && mappedLyric.getAttribute("data-note-index") === "0", "numbered-score lyric targets must retain exact note identity");
+    assert(container.querySelector('[data-edit-kind="track-name"][data-track-id="lead-id"]')?.textContent === "Lead", "numbered-score part labels must map to their source track");
     const marker = container.querySelector(".jianpu-annotation");
     assert(marker?.textContent === "A1 / C ? / 和弦为自动推测（?）", "analysis words must render as safe SVG text");
     const markerBounds = marker.getBBox();

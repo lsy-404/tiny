@@ -1,0 +1,54 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Staff layout browser checks</title>
+<div id="result">Running…</div>
+<div id="score"></div>
+<script src="/vendor/opensheetmusicdisplay.min.js"></script>
+<script type="module">
+  import { createScore, parseSvp, QUARTER } from '/apps/vocal-score/src/lib/converter.js';
+  import { decoratePages } from '/apps/vocal-score/src/lib/page-layout.js';
+  import { renderStaffScore } from '/apps/vocal-score/src/lib/staff.js';
+
+  const result = document.querySelector('#result');
+  const assert = (condition, message) => { if (!condition) throw new Error(message); };
+  try {
+    const geometry = document.createElement('div');
+    const noViewBox = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    noViewBox.setAttribute('width', '210mm'); noViewBox.setAttribute('height', '297mm');
+    geometry.append(noViewBox);
+    const decorated = decoratePages(geometry, { title: 'Page title', header: 'Header', by: 'Author' });
+    const base = noViewBox.getAttribute('data-base-viewbox').split(' ').map(Number);
+    assert(decorated.length === 1 && Math.abs(base[2] / base[3] - 210 / 297) < 0.002, 'fallback viewBox must preserve SVG physical dimensions');
+    assert(noViewBox.querySelector('[data-edit-kind="title"]')?.textContent === 'Page title', 'title must be marked as editable text');
+    assert(noViewBox.querySelector('[data-edit-kind="header"]')?.textContent === 'Header', 'header must be marked as editable text');
+    assert(noViewBox.querySelector('[data-edit-kind="by"]')?.textContent === 'by Author', 'author line must be marked as editable text');
+    const invalid = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const badContainer = document.createElement('div'); badContainer.append(invalid);
+    let invalidRejected = false;
+    try { decoratePages(badContainer); } catch (error) { invalidRejected = error instanceof TypeError; }
+    assert(invalidRejected, 'SVG without a viewBox or dimensions must fail clearly');
+
+    const project = parseSvp(JSON.stringify({
+      projectName: 'Layout check', version: 153,
+      time: { tempo: [{ position: 0, bpm: 120 }], meter: [{ index: 0, numerator: 4, denominator: 4 }] },
+      tracks: [{ name: 'Lead', mainGroup: { uuid: 'voice-a', notes: [
+        { onset: 0, duration: QUARTER, pitch: 60, lyrics: 'same' },
+        { onset: QUARTER, duration: QUARTER, pitch: 62, lyrics: 'same' },
+        { onset: QUARTER * 2, duration: QUARTER, pitch: 64, lyrics: 'again' },
+      ] }, groups: [] }]
+    }));
+    const converted = createScore(project);
+    const score = document.querySelector('#score');
+    const { osmd } = await renderStaffScore(score, converted.xml, { model: converted.model });
+    const targets = [...score.querySelectorAll('[data-edit-kind="lyric"]')];
+    assert(osmd.Zoom === 1, 'staff renderer must use native page scale');
+    assert(targets.length >= 3, 'each visible OSMD lyric should receive a source target');
+    assert(targets.every(node => node.getAttribute('data-track-id') === 'voice-a'), 'lyric targets must map to the source track identity');
+    assert(targets.every(node => ['0', '1', '2'].includes(node.getAttribute('data-note-index'))), 'lyric targets must keep source note indices even for duplicate lyric text');
+    assert([...score.querySelectorAll('[data-edit-kind="track-name"]')].some(node => node.getAttribute('data-track-id') === 'voice-a'), 'part labels must map to their source track');
+    assert(score.querySelector('svg[viewBox]'), 'OSMD should produce SVG pages with explicit geometry');
+    result.textContent = `PASS: ${targets.length} source-mapped lyrics, native zoom, SVG page geometry`;
+  } catch (error) {
+    result.textContent = `FAIL: ${error?.stack || error}`;
+  }
+</script>
