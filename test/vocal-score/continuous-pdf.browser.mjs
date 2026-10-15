@@ -1,0 +1,93 @@
+import assert from 'node:assert/strict';
+
+const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const base = process.env.PREVIEW_URL || 'http://127.0.0.1:4190/projects/vocal-score/';
+const browser = await chromium.launch({
+  executablePath: process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe',
+  headless: true,
+});
+
+const quarter = 705600000;
+const project = {
+  version: 153,
+  projectName: 'Continuous scroll study',
+  time: { tempo: [{ position: 0, bpm: 120 }], meter: [{ index: 0, numerator: 4, denominator: 4 }] },
+  tracks: [{
+    name: 'Lead',
+    mainGroup: {
+      uuid: 'continuous-lead',
+      notes: Array.from({ length: 1100 }, (_, index) => ({
+        onset: index * quarter,
+        duration: quarter,
+        pitch: [60, 62, 64, 65, 67, 69, 71, 72][index % 8],
+        lyrics: 'la',
+      })),
+    },
+  }],
+};
+
+try {
+  const page = await browser.newPage({ locale: 'zh-CN', viewport: { width: 1440, height: 1000 } });
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto(base);
+  await page.waitForFunction(() => document.querySelector('#file-input') && !document.querySelector('#file-input').disabled, null, { timeout: 30000 });
+  await page.locator('#file-input').setInputFiles({
+    name: 'continuous-scroll.svp',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(project)),
+  });
+  await page.locator('#pdf-button:enabled').waitFor({ timeout: 90000 });
+  const viewport = page.locator('.pdf-viewer__viewport');
+  const pages = page.locator('.pdf-viewer__page');
+  await page.waitForFunction(() => document.querySelectorAll('.pdf-viewer__page').length >= 3, null, { timeout: 30000 });
+  const count = await pages.count();
+  assert(count >= 3, `long score should span multiple pages, got ${count}`);
+
+  const dimensions = await viewport.evaluate(element => ({ clientHeight: element.clientHeight, scrollHeight: element.scrollHeight }));
+  assert(dimensions.scrollHeight > dimensions.clientHeight * 2, 'all pages share a vertically scrollable viewport');
+  const gaps = await pages.evaluateAll(elements => elements.slice(1).map((element, index) => {
+    const previous = elements[index].getBoundingClientRect();
+    const current = element.getBoundingClientRect();
+    return current.top - previous.bottom;
+  }));
+  assert(gaps.every(gap => gap >= 9 && gap <= 11), `page gaps remain compact: ${gaps.join(', ')}`);
+
+  const firstCanvas = pages.nth(0).locator('canvas');
+  const lastPage = pages.nth(count - 1);
+  const lastCanvas = lastPage.locator('canvas');
+  await firstCanvas.waitFor({ state: 'attached' });
+  await page.waitForFunction(() => document.querySelector('.pdf-viewer__page canvas[data-rendered="true"]'));
+  assert.equal(await lastCanvas.evaluate(canvas => canvas.dataset.rendered || ''), '', 'distant pages are deferred');
+
+  await lastPage.evaluate(element => element.scrollIntoView({ block: 'center' }));
+  await lastCanvas.waitFor({ state: 'attached' });
+  await page.waitForFunction(index => document.querySelectorAll('.pdf-viewer__page')[index]?.querySelector('canvas')?.dataset.rendered === 'true', count - 1, { timeout: 30000 });
+  await page.waitForFunction(index => Number(document.querySelector('.pdf-viewer__page-input').value) === index + 1, count - 1);
+  await page.waitForFunction(() => document.querySelector('.pdf-viewer__page canvas')?.width === 0, null, { timeout: 10000 });
+  assert.equal(await firstCanvas.evaluate(canvas => canvas.width), 0, 'far-away page raster memory is released');
+
+  const beforeZoom = await pages.nth(0).evaluate(element => parseFloat(element.style.width));
+  const lastBeforeZoom = await lastPage.evaluate(element => parseFloat(element.style.width));
+  assert.equal(lastBeforeZoom, beforeZoom, 'all page placeholders share the document zoom');
+  const zoom = page.locator('.pdf-viewer__zoom');
+  await zoom.selectOption('0.75');
+  await page.waitForFunction(previous => parseFloat(document.querySelector('.pdf-viewer__page').style.width) < previous - 20, beforeZoom);
+  const afterZoom = await pages.nth(0).evaluate(element => parseFloat(element.style.width));
+  assert.equal(await lastPage.evaluate(element => parseFloat(element.style.width)), afterZoom, 'zoom updates every page wrapper');
+
+  const pageInput = page.locator('.pdf-viewer__page-input');
+  await pageInput.fill('2');
+  await pageInput.press('Enter');
+  await page.waitForFunction(() => Number(document.querySelector('.pdf-viewer__page-input').value) === 2);
+  await page.waitForFunction(() => {
+    const viewer = document.querySelector('.pdf-viewer__viewport');
+    const target = document.querySelector('.pdf-viewer__page[data-page-number="2"]');
+    return target && Math.abs(target.getBoundingClientRect().top - viewer.getBoundingClientRect().top) < 40;
+  });
+  assert.deepEqual(errors, [], 'PDF.js scrolling and rendering produce no uncaught browser errors');
+  process.stdout.write(JSON.stringify({ status: 'passed', pages: count, compactGapPx: gaps[0], releasedDistantCanvas: true }));
+  await page.close();
+} finally {
+  await browser.close();
+}
