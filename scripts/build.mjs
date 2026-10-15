@@ -1,4 +1,4 @@
-import { cp, mkdir, readFile, readdir, rm, stat } from 'node:fs/promises';
+import { cp, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { join, resolve } from 'node:path';
 
@@ -40,5 +40,8 @@ for (const project of catalog) {
   await mkdir(destination, { recursive: true });
   await cp(source, destination, { recursive: true });
 }
+
+const cassieHeaders = await readFile(join(root, 'projects/cassie/_headers'), 'utf8');
+await writeFile(join(output, '_headers'), cassieHeaders.replace(/^\//gm, '/projects/cassie/'));
 
 console.log(`Built ${catalog.length} entries and ${await fileCount(output)} static files in dist/.`);
