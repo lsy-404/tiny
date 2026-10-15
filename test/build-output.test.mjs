@@ -1,4 +1,4 @@
-import { access, readFile, stat } from 'node:fs/promises';
+import { access, readFile, readdir, stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { join, resolve } from 'node:path';
 
@@ -37,6 +37,39 @@ for (const project of catalog) {
       throw new Error(`The ${project.slug} README was not preserved in the build output.`);
     }
   }
+}
+
+const cassieEntry = catalog.find((project) => project.slug === 'cassie');
+if (!cassieEntry || cassieEntry.path !== 'projects/cassie') {
+  throw new Error('The CASSIE catalog entry must use the projects/cassie route.');
+}
+const cassieOutput = join(output, 'projects', 'cassie');
+const cassieHtml = await readFile(join(cassieOutput, 'index.html'), 'utf8');
+const cassieAssets = [...cassieHtml.matchAll(/(?:src|href)="([^"]+)"/g)]
+  .map((match) => match[1])
+  .filter((asset) => asset.startsWith('/projects/cassie/') || asset.startsWith('./'));
+if (!cassieAssets.some((asset) => /\.m?js(?:\?|$)/.test(asset))) {
+  throw new Error('The CASSIE subpath entry does not reference its emitted application bundle.');
+}
+for (const asset of cassieAssets) {
+  const relative = asset.startsWith('./') ? asset.slice(2) : asset.replace(/^\/projects\/cassie\//, '');
+  await mustExist(join(cassieOutput, relative));
+}
+const cassieFiles = await readdir(cassieOutput, { recursive: true });
+if (!cassieFiles.some((file) => /worker/i.test(file) && /\.m?js$/.test(file))) {
+  throw new Error('The CASSIE build is missing its emitted worker JavaScript asset.');
+}
+const headersPath = join(output, '_headers');
+const headers = await readFile(headersPath, 'utf8');
+const headerRules = headers.split(/\r?\n/).filter((line) => line && !line.startsWith('#') && !/^\s/.test(line));
+if (!headerRules.length || headerRules.some((rule) => !rule.startsWith('/projects/cassie/'))) {
+  throw new Error('Every root _headers rule must be scoped under /projects/cassie/.');
+}
+if (!/content-security-policy\s*:/i.test(headers) || !/x-content-type-options\s*:\s*nosniff/i.test(headers)) {
+  throw new Error('The CASSIE-scoped headers must include CSP and nosniff.');
+}
+if (/cross-origin-(?:embedder|opener)-policy/i.test(headers)) {
+  throw new Error('The CASSIE deployment must not add cross-origin isolation headers.');
 }
 
 await Promise.all([

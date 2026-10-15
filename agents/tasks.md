@@ -20,3 +20,6 @@
 | 015 | [Brand] tiny_portal | 门户、作品返回入口与说明改名 | 全站品牌一致 | ✅ 已完成 |
 | 016 | [Verify] tiny_brand | 更新现有构建和发布断言 | 域名和品牌验证 | ✅ 已完成 |
 | 017 | [Verify] tiny_review | 独立复核可见品牌残留 | 核对构建产物 | ✅ 已完成 |
+| 018 | [Feature] cassie_integration | CASSIE迁到子路径并加入主菜单返回入口 | 用户要求统一工具入口 | 🔄 进行中 |
+| 019 | [Feature] score_menu | 声谱四语主菜单入口 | 用户要求返回门户 | ✅ 已完成 |
+| 020 | [Verify] project_navigation | 项目卡片、资源与键盘导航验证 | 迁移需覆盖真实嵌套路由 | ✅ 已完成 |

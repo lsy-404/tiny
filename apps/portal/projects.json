@@ -37,5 +37,18 @@
     "credit": "本地处理 · 使用 Vue、OpenSheetMusicDisplay 与 PDF.js",
     "meta": "PDF · MusicXML · 简谱",
     "action": "打开工具"
+  },
+  {
+    "slug": "cassie",
+    "path": "projects/cassie",
+    "kind": "tool",
+    "eyebrow": "广播合成工具",
+    "title": "CASSIE PLUS",
+    "description": "编辑 CASSIE 广播文本，调整音高、语速与音色，在浏览器中试听并导出 WAV 或 Opus。",
+    "cover": "./assets/cassie.svg",
+    "coverAlt": "CASSIE 广播终端与音频波形插画",
+    "credit": "开源代码 AGPL-3.0 · 音频素材 CC BY-SA 3.0，详见工具内许可",
+    "meta": "本地处理 · WAV · Opus",
+    "action": "打开工具"
   }
 ]

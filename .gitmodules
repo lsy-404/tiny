@@ -1,0 +1,3 @@
+[submodule "apps/cassie"]
+	path = apps/cassie
+	url = https://github.com/lsy-404/CASSIE.git

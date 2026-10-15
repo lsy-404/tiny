@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="520" viewBox="0 0 800 520" fill="none">
+  <defs><linearGradient id="screen" x1="150" y1="0" x2="800" y2="520" gradientUnits="userSpaceOnUse"><stop stop-color="#292d2c"/><stop offset="1" stop-color="#101312"/></linearGradient></defs>
+  <rect width="800" height="520" fill="url(#screen)"/>
+  <g stroke="#a9b2ad" opacity=".12"><path d="M0 80H800M0 160H800M0 240H800M0 320H800M0 400H800M0 480H800M80 0V520M160 0V520M240 0V520M320 0V520M400 0V520M480 0V520M560 0V520M640 0V520M720 0V520"/></g>
+  <rect x="118" y="106" width="580" height="306" rx="8" fill="#141816" stroke="#606a64" stroke-width="2"/>
+  <path d="M118 154H698" stroke="#606a64"/>
+  <circle cx="148" cy="130" r="5" fill="#c3cdc7"/><circle cx="170" cy="130" r="5" fill="#616a65"/><circle cx="192" cy="130" r="5" fill="#616a65"/>
+  <text x="154" y="219" fill="#e2e8e4" font-family="monospace" font-size="35" letter-spacing="5">C.A.S.S.I.E.+</text>
+  <text x="155" y="251" fill="#8a978e" font-family="monospace" font-size="13" letter-spacing="2">ANNOUNCEMENT STUDIO</text>
+  <g stroke="#b3c7b9" stroke-width="5" stroke-linecap="round"><path d="M157 329H199M213 316V342M228 305V353M243 322V336M258 293V365M273 310V348M288 282V376M303 302V356M318 316V342M333 309V349M348 296V362M363 319V339M378 326V332M393 311V347M408 302V356M423 289V369M438 307V351M453 317V341M468 303V355M483 315V343M498 324V334M513 312V346M528 321V337M543 327H653"/></g>
+</svg>
