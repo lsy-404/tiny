@@ -5,3 +5,6 @@
 | :--: | :------: | :------: | :------: | :--: |
 | 001 | [Deploy] vocal_score | 集成人声谱并发布现有门户 | 用户已提供最新门户源码 | 🔄 进行中 |
 | 004 | [Verify] release_baseline | 核验门户线上基线与发布回归路径 | 确保现有项目资源不回退并记录 PDF worker 部署检查 | ✅ 完成 |
+| 005 | [Feature] sidebar_navigation | 设置栏目切换与收起 | 用户要求扩大谱面空间 | 🔄 进行中 |
+| 006 | [Fix] staff_page_layout | 五线谱页面几何与留白 | 用户反馈谱面展示欠佳 | 🔄 进行中 |
+| 007 | [Feature] continuous_pdf | PDF全部页面连续滚动 | 用户要求完整往下拉 | 🔄 进行中 |
