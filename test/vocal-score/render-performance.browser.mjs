@@ -19,7 +19,7 @@ try{
     const start=performance.now();
     await action();
     await page.locator('#pdf-button:enabled').waitFor({timeout:90000});
-    await page.locator('.pdf-viewer canvas[data-rendered=true]').first().waitFor({timeout:30000});
+    await page.locator('.score-viewer__sheet[data-rendered=true]').first().waitFor({timeout:30000});
     timings[name]=Math.round(performance.now()-start);
   };
   await measure('importMs',()=>page.locator('#file-input').setInputFiles(files[0]));

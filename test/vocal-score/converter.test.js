@@ -81,7 +81,7 @@ test('creates MusicXML 4.0 with measure rests, ties across bars, and corrected o
   assert.equal(new Set(noteIds).size, noteIds.length, 'every MusicXML note id must be globally unique, including tied measure segments');
   assert(noteIds.some(id => id.includes('-m0-')) && noteIds.some(id => id.includes('-m1-')), 'split note segments must identify their measure');
   assert.match(result.xml, /<step>C<\/step><octave>4<\/octave>/);
-  assert.match(result.xml, /<rest\/><duration>48<\/duration>/);
+  assert.match(result.xml, /<rest\/><duration>16<\/duration><voice>1<\/voice><type>quarter<\/type><\/note><note><rest\/><duration>32<\/duration><voice>1<\/voice><type>half<\/type>/, 'rests after beat 2 keep the middle of the bar visible');
   assert.match(result.xml, /<divisions>16<\/divisions><key><fifths>0<\/fifths><\/key><time><beats>4<\/beats><beat-type>4<\/beat-type><\/time><clef>/);
   assert.match(result.xml, /<duration>64<\/duration><tie type="start"\/><voice>1<\/voice>/);
 });
@@ -291,7 +291,7 @@ test('returns a fresh canonical model aligned to quantized MusicXML timing', () 
   assert.deepEqual(result.model, {
     divisions: 16,
     measures: [{ index: 0, start: 0, end: 64, meter: { numerator: 4, denominator: 4 } }],
-    tracks: [{ id: 'voice', name: 'Lead', notes: [
+    tracks: [{ id: 'voice', name: 'Lead', clef: 'treble', percussion: false, notes: [
       { ...firstNote, tuning: emptyModelTuning() },
       { ...secondNote, tuning: emptyModelTuning() }
     ] }],
@@ -468,6 +468,92 @@ test('skips empty upper tracks, respects selection order, and preserves simultan
   assert.equal(result.merging.movedNoteCount, 1);
   assert.deepEqual(result.model.tracks.flatMap(track => track.notes).map(note => note.pitch).sort((a, b) => a - b), [60, 62, 67]);
   assert.equal(result.stats.noteCount, 3);
+});
+
+function rhythmProject(notes, meter = { index: 0, numerator: 4, denominator: 4 }, tempos = [{ position: 0, bpm: 120 }]) {
+  let onset = 0;
+  return { title: 'Rhythm', tracks: [{ id: 'v', name: 'V', notes: notes.map(([duration, pitch = 60]) => {
+    const note = { onset, duration: QUARTER * duration, pitch, lyrics: 'la' };
+    onset += QUARTER * duration;
+    return note;
+  }).filter(note => note.pitch !== null) }], meters: [meter], tempos, warnings: [] };
+}
+const noteTags = xml => [...xml.matchAll(/<note(?: id="[^"]*")?>(.*?)<\/note>/g)].map(match => match[1]);
+const beamsOf = note => [...note.matchAll(/<beam number="(\d)">([^<]+)<\/beam>/g)].map(match => `${match[1]}:${match[2]}`).join(' ');
+
+test('beams eighths and sixteenths by beat, joining plain eighths across a half bar', () => {
+  const { xml } = createScore(rhythmProject([[0.5], [0.5], [0.5], [0.5], [0.25], [0.25], [0.25], [0.25], [0.5], [0.5]]));
+  const notes = noteTags(xml);
+  assert.deepEqual(notes.slice(0, 4).map(beamsOf), ['1:begin', '1:continue', '1:continue', '1:end']);
+  assert.deepEqual(notes.slice(4, 8).map(beamsOf), ['1:begin 2:begin', '1:continue 2:continue', '1:continue 2:continue', '1:end 2:end']);
+  assert.deepEqual(notes.slice(8, 10).map(beamsOf), ['1:begin', '1:end']);
+});
+
+test('writes dotted rhythms with hooks and splits off-beat notes at the beat', () => {
+  const dotted = noteTags(createScore(rhythmProject([[0.75], [0.25], [0.25], [0.75], [2]])).xml);
+  assert.match(dotted[0], /<type>eighth<\/type><dot\/><beam number="1">begin<\/beam>/);
+  assert.equal(beamsOf(dotted[1]), '1:end 2:backward hook');
+  assert.equal(beamsOf(dotted[2]), '1:begin 2:forward hook');
+  assert.match(dotted[3], /<type>eighth<\/type><dot\/><beam number="1">end<\/beam>/);
+  const typeOf = note => note.match(/<type>([^<]+)<\/type>/)[1];
+  const syncopated = noteTags(createScore(rhythmProject([[0.5], [1], [1], [1], [0.5]])).xml);
+  assert.deepEqual(syncopated.map(typeOf), ['eighth', 'quarter', 'eighth', 'eighth', 'quarter', 'eighth'], 'off-beat quarters stay whole within a half bar and are tied across its middle');
+  assert.match(syncopated[2], /<tie type="start"\/>/);
+  assert.match(syncopated[3], /<tie type="stop"\/>/);
+  const sixteenths = noteTags(createScore(rhythmProject([[0.75], [0.5], [0.75], [2]])).xml);
+  assert.deepEqual(sixteenths.slice(0, 4).map(typeOf), ['eighth', '16th', '16th', 'eighth'], 'notes crossing a beat at sixteenth offsets are split at the beat');
+  const dottedQuarter = noteTags(createScore(rhythmProject([[1.5], [0.5], [2]])).xml);
+  assert.match(dottedQuarter[0], /<type>quarter<\/type><dot\/>/, 'a dotted quarter starting on a beat stays one value');
+});
+
+test('groups compound meters by dotted quarter', () => {
+  const { xml } = createScore(rhythmProject([[0.5], [0.5], [0.5], [0.5], [0.5], [0.5]], { index: 0, numerator: 6, denominator: 8 }));
+  assert.deepEqual(noteTags(xml).map(beamsOf), ['1:begin', '1:continue', '1:end', '1:begin', '1:continue', '1:end']);
+});
+
+test('reduces tempo ramps and step pairs to readable marks', () => {
+  const ramp = Array.from({ length: 30 }, (_, index) => ({ position: QUARTER * 8 + index * QUARTER / 8, bpm: 133 - index * 0.5 }));
+  const tempos = [{ position: 0, bpm: 133 }, ...ramp, { position: QUARTER * 16 - 1000, bpm: 150.4 }, { position: QUARTER * 16, bpm: 150 }];
+  const { xml } = createScore(rhythmProject([[20]], undefined, tempos));
+  assert.deepEqual([...xml.matchAll(/<per-minute>([^<]+)<\/per-minute>/g)].map(match => match[1]), ['133', '119', '150']);
+  assert.equal((xml.match(/<words font-style="italic">rit\.<\/words>/g) || []).length, 1);
+  assert.doesNotMatch(xml, /<per-minute>\d+\.\d+/);
+});
+
+test('detects a sustained modulation and writes the new key signature', () => {
+  const cMajor = [60, 62, 64, 65, 67, 69, 71, 72];
+  const notes = [...Array.from({ length: 64 }, (_, index) => [0.5 * 2, cMajor[index % 8]]), ...Array.from({ length: 32 }, (_, index) => [1, cMajor[index % 8] + 1])];
+  const project = rhythmProject(notes);
+  const plain = createScore(project);
+  assert.equal(plain.keyChanges.length, 0, 'modulation detection is opt-in');
+  const detected = createScore(project, { modulation: true });
+  assert.deepEqual(detected.keyChanges, [{ measureIndex: 16, fifths: -5 }]);
+  assert.match(detected.xml, /<measure number="17"><attributes><key><fifths>-5<\/fifths><\/key><\/attributes>/);
+  assert.match(detected.xml, /<measure number="17">.*?<step>D<\/step><alter>-1<\/alter>/, 'notes after the change are spelled in the new key');
+  const passing = createScore(rhythmProject([...Array.from({ length: 60 }, (_, index) => [1, cMajor[index % 8]]), [1, 66], [1, 67], [1, 68], [1, 69]]), { modulation: true });
+  assert.equal(passing.keyChanges.length, 0, 'a few chromatic notes do not change the key');
+});
+
+test('lays out instrumental tracks as a score with chords, clefs and unpitched percussion', () => {
+  const track = (id, name, instrument, notes) => ({ id, name, instrument, notes: notes.map(([onset, duration, pitch]) => ({ onset: QUARTER * onset, duration: QUARTER * duration, pitch, lyrics: '' })) });
+  const project = { title: 'Ensemble', meters: [{ index: 0, numerator: 4, denominator: 4 }], tempos: [{ position: 0, bpm: 90 }], warnings: [], tracks: [
+    track('vc', 'Cello', { name: 'Cello', family: 'strings', order: 62, clef: 'bass', percussion: false }, [[0, 4, 36]]),
+    track('drums', 'Kit', { name: 'Kit', family: 'percussion', order: 36, clef: 'percussion', percussion: true }, [[0, 1, 36], [0, 1, 42], [1, 1, 38]]),
+    track('fl', 'Flute', { name: 'Flute', family: 'woodwind', order: 11, clef: 'treble', percussion: false }, [[0, 2, 72], [0, 2, 76], [0, 2, 79], [2, 2, 74]]),
+  ] };
+  const result = createScore(project, { mergeContinuations: true, fifths: 3 });
+  assert.deepEqual(result.parts.map(part => part.name), ['Flute', 'Kit', 'Cello'], 'parts follow score order');
+  assert.equal(result.merging.enabled, false, 'instrumental parts are never merged');
+  assert.equal(result.warnings.some(warning => warning.includes('voices')), false, 'simultaneous notes form chords, not extra voices');
+  const parts = [...result.xml.matchAll(/<part id="P\d">(.*?)<\/part>/g)].map(match => match[1]);
+  assert.equal((parts[0].match(/<chord\/>/g) || []).length, 2, 'a three-note flute chord');
+  assert.match(parts[1], /<clef><sign>percussion<\/sign><\/clef>/);
+  assert.match(parts[1], /<key><fifths>0<\/fifths><\/key>/, 'drum staves have no key signature');
+  assert.match(parts[0], /<key><fifths>3<\/fifths><\/key>/);
+  assert.match(parts[1], /<unpitched><display-step>F<\/display-step><display-octave>4<\/display-octave><\/unpitched>/, 'kick drum below the staff middle');
+  assert.match(parts[1], /<notehead>x<\/notehead>/, 'cymbals use x noteheads');
+  assert.match(parts[2], /<clef><sign>F<\/sign><line>4<\/line><\/clef>/, 'cello uses the bass clef');
+  assert.deepEqual(result.model.tracks.map(item => item.clef), ['treble', 'percussion', 'bass']);
 });
 
 const sampleFiles = (process.env.SVP_SAMPLE_FILES || '').split(';').filter(Boolean);

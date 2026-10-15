@@ -17,7 +17,7 @@ const tool='projects/vocal-score/';
 const html=await readFile(path.join(root,tool,'index.html'),'utf8');
 const toolAssets=[...html.matchAll(/(?:src|href)="\.\/([^"]+)"/g)].map(match=>tool+match[1]);
 const workers=(await readdir(path.join(root,tool,'assets'))).filter(file=>/^pdf\.worker[.-]/.test(file)).map(file=>`${tool}assets/${file}`);
-assert.equal(workers.length,2,'Both local PDF generation and PDF.js workers must be bundled.');
+assert.equal(workers.length,1,'The local PDF generation worker must be bundled.');
 const cassie='projects/cassie/';
 const cassieHtml=await readFile(path.join(root,cassie,'index.html'),'utf8');
 const cassieAssets=[...cassieHtml.matchAll(/(?:src|href)="([^"]+)"/g)]

@@ -27,14 +27,14 @@ try{
   assert.equal(await page.locator('#demo-button').count(),0);
   assert(await page.locator('#pdf-button').isDisabled());
   await page.locator('#file-input').setInputFiles({name:'pitch-study.svp',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(project))});
-  const ready=async()=>{await page.locator('#pdf-button:enabled').waitFor({timeout:60000});await page.locator('.pdf-viewer canvas[data-rendered=true]').first().waitFor({timeout:30000});};
+  const ready=async()=>{await page.locator('#pdf-button:enabled').waitFor({timeout:60000});await page.locator('.score-viewer__sheet[data-rendered=true]').first().waitFor({timeout:30000});};
   await ready();
   assert.equal(await page.locator('#message.error').count(),0);
-  assert((await page.locator('.pdf-viewer canvas').first().evaluate(node=>node.clientWidth))>600,'PDF preview starts at a readable page width');
-  const navigation=await page.locator('.pdf-viewer__navigation').boundingBox(),zoom=await page.locator('.pdf-viewer__zoom').boundingBox();
-  assert(navigation.x+navigation.width<=zoom.x+1,'PDF navigation and zoom do not overlap');
+  assert((await page.locator('.score-viewer__page').first().evaluate(node=>node.clientWidth))>600,'Score preview starts at a readable page width');
+  const navigation=await page.locator('.score-viewer__navigation').boundingBox(),zoom=await page.locator('.score-viewer__zoom').boundingBox();
+  assert(navigation.x+navigation.width<=zoom.x+1,'Preview navigation and zoom do not overlap');
   await page.locator('#theme-button').click();assert.equal(await page.locator('body').getAttribute('data-fluent-theme'),'dark');
-  const darkBackground=await page.locator('.pdf-viewer__toolbar').evaluate(node=>getComputedStyle(node.parentElement).backgroundColor);assert.match(darkBackground,/41, 41, 41/);
+  const darkBackground=await page.locator('.score-viewer__toolbar').evaluate(node=>getComputedStyle(node.parentElement).backgroundColor);assert.match(darkBackground,/41, 41, 41/);
   await page.reload();await ready();assert.equal(await page.locator('body').getAttribute('data-fluent-theme'),'dark','Theme preference persists');
   if(out)await page.screenshot({path:path.join(out,'pdf-dark.png'),fullPage:false});
   await page.locator('#theme-button').click();
@@ -79,7 +79,7 @@ try{
   await page.locator('#file-input').setInputFiles({name:'broken.svp',mimeType:'application/json',buffer:Buffer.from('{invalid')});await page.locator('#message.error').waitFor();assert.match(await page.locator('#message').textContent(),/有效/);
   await page.setViewportSize({width:390,height:844});await page.waitForTimeout(500);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
-  const mobileNavigation=await page.locator('.pdf-viewer__navigation').boundingBox(),mobileZoom=await page.locator('.pdf-viewer__zoom').boundingBox();assert(mobileNavigation.x+mobileNavigation.width<=mobileZoom.x+1,'Mobile PDF controls stay separate');
+  const mobileNavigation=await page.locator('.score-viewer__navigation').boundingBox(),mobileZoom=await page.locator('.score-viewer__zoom').boundingBox();assert(mobileNavigation.x+mobileNavigation.width<=mobileZoom.x+1,'Mobile preview controls stay separate');
   if(out)await page.screenshot({path:path.join(out,'pdf-mobile.png'),fullPage:false});
   assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
   console.log(JSON.stringify({status:'passed',formats:Object.keys(formats),files:files.length,browserErrors:errors.length,externalRequests:external.length,edgeAnalyticsRequests:edgeAnalytics.length}));

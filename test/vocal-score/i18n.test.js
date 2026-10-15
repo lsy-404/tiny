@@ -54,23 +54,23 @@ test('App and lyric editor messages exist in all locales and resolve their place
   const previous = getLanguage();
   tcase.after(() => setLanguage(previous));
   const keys = [
-    '声谱', 'by 署名', '标记重复乐段', '谱面显示推测和弦', '调号', '大调', '小调', '自动修正音阶', '偏移阈值',
+    '织音机', '织音机首页', 'by 署名', '标记重复乐段', '谱面显示推测和弦', '调号', '大调', '小调', '自动修正音阶', '偏移阈值',
     '当前所选声部没有触发半音修正。', '{parts} 声部 · {count} 音符', '{count} 音分',
     '音域 {range} · {shift} 半音。', '{length} 小节 × {count}',
     '{name}：存在重叠发声，可能为和声或叠唱', '匹配 {percent}%', '推测和弦', '工程文件列表',
-    '无升降号', '移除文件 {name}', '文件和设置保存在当前浏览器。清除浏览器数据会删除已存内容。',
-    '选择或拖入文件，生成五线谱与简谱。', '请至少选择一个人声声部。',
+    '无升降号', '移除文件 {name}', '文件和设置保存在当前浏览器',
+    '选择或拖入 SVP', '文件仅在本机处理', '导出 SVG', '单独的 - 表示延长前一个字。', '识别转调', '第 {measure} 小节转为 {key}', '页边距 (mm)', '选择或拖入工程', '不支持此文件类型。', '工程中没有可转换的音符。', '{format} · {count} 个声部', 'import.error.unsupported', 'import.error.invalid', '感谢奥莉安多提供的样本数据和改善建议', '还有 {count} 条提示', '请至少选择一个人声声部。',
     '文件不是有效的 SVP JSON，请检查文件是否完整。', '这个 JSON 文件不是 Synthesizer V 工程。',
     '调号为手动设置。', '调号已随整体移调更新。',
     '保存失败；请保留原文件并检查浏览器存储空间。', '移除失败，请重试。',
     '无法读取浏览器存储；请检查浏览器的数据权限。', '（异词）', '和弦为自动推测（?）',
     'lyricEditor.notes', 'lyricEditor.position', 'lyricEditor.countOver', 'lyricEditor.countUnder',
     'lyricEditor.clearNote', 'lyricEditor.restoreNote', '汉字替换拼音',
-    'PDF 预览', '上一页', '下一页', '适合页面', '正在加载 PDF…', '第 {page} 页，共 {total} 页', 'PDF 渲染失败',
-    '下载 PDF', '方向', '横向', '纵向', '纸张', 'PDF 缩放', '适合页宽',
+    '乐谱预览', '上一页', '下一页', '适合页面', '第 {page} 页，共 {total} 页',
+    '下载 PDF', '方向', '横向', '纵向', '纸张', '缩放', '适合页宽',
     '正在恢复文件…', '正在保存…', '已保存在此浏览器', '已移除'
   ];
-  const params = {parts: 2, count: 3, range: 'C3–C5', shift: '+1', length: 4, name: 'Voice', percent: 88, bar: 2, beat: 3, difference: 1, index: 5};
+  const params = {format: 'MIDI', detail: '', name: 'a.txt', measure: 9, key: 'E♭ / c', parts: 2, count: 3, range: 'C3–C5', shift: '+1', length: 4, name: 'Voice', percent: 88, bar: 2, beat: 3, difference: 1, index: 5};
 
   setLanguage('zh-CN');
   assert.equal(t('lyricEditor.notes'), '音符歌词');
@@ -85,7 +85,7 @@ test('App and lyric editor messages exist in all locales and resolve their place
   }
 });
 
-test('fit-width PDF zoom label is translated in every locale', () => {
+test('fit-width zoom label is translated in every locale', () => {
   const expected = {
     'zh-CN': '适合页宽',
     en: 'Fit width',

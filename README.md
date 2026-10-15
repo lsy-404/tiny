@@ -1,6 +1,6 @@
 # Tiny Projects
 
-Tiny Projects 是展示小工具、游戏与互动作品的静态门户。门户包含本地运行的 SVP 人声谱和 CASSIE PLUS 广播合成工具，均可返回主菜单；导航可访问 [Blog](https://leisiyu.dev/)。构建后的 `dist/` 可直接部署到静态托管服务。
+Tiny Projects 是展示小工具、游戏与互动作品的静态门户。门户包含本地运行的织音机（读取 SVP、ACE Studio、VOCALOID、UTAU、MIDI、FL Studio 等工程，预览五线谱与简谱并下载 PDF）和 CASSIE PLUS 广播合成工具，均可返回主菜单；导航可访问 [Blog](https://leisiyu.dev/)。构建后的 `dist/` 可直接部署到静态托管服务。
 
 在线访问：[tiny.leisiyu.dev](https://tiny.leisiyu.dev/)。
 

@@ -193,7 +193,7 @@ try {
     await page.locator('#export-button:enabled').waitFor({timeout:30000});
     const text=await page.locator('.lyric-editor__heading h3').textContent();
     localeTitles.push(text.trim());
-    localeHeadings.push((await page.locator('.sidebar-intro h1').textContent()).trim());
+    localeHeadings.push((await page.locator('.brand span').textContent()).trim());
     assert.ok(text.trim(),`${locale} should translate the editor heading`);
     assert.equal(await page.locator('#score-title').inputValue(),'标题 A <雪>','locale changes must not rewrite user titles');
     assert.equal(await page.locator('#lyric-editor .lyric-editor__note input').nth(0).inputValue(),'修改后的歌词A','locale changes must not rewrite lyrics');
