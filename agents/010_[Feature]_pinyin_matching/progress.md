@@ -1,0 +1,5 @@
+- Added contextual and polyphonic matching with tone/ü normalization and partial-span candidates.
+- Added explicit candidate selection for repeated spans, in-place Hanzi fill, and targeted undo snapshots.
+- Added tests for pronunciation, normalization, marker handling, repeated/no match, and timing/pitch preservation.
+- Added four-locale labels for matching, candidate selection, undo, score text editing, and PDF generation.
+- Validation passed: `pnpm run build`; all 52 vocal-score unit tests (51 pass, 1 configured sample-file skip); production Chromium lyric-editor test.
