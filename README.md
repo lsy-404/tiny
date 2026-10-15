@@ -14,7 +14,7 @@ pnpm run test
 
 需要 Node.js 22.13 或更高版本。门户统一使用 pnpm 管理依赖；构建先生成 `apps/vocal-score` 的静态资源，再将所有项目复制到 `dist/`。
 
-部署使用临时 Wrangler CLI：`pnpm run deploy`。
+`main` 已连接 Cloudflare Workers Builds，推送后等待 GitHub 的构建检查成功，再验证线上入口。需要手工发布时可运行 `pnpm run deploy`。
 
 发布入口为 `dist/index.html`。项目清单位于 `apps/portal/projects.json`，每项的 `path` 指定仓库内的静态项目目录；该目录需要包含 `index.html`，构建时会复制到 `dist/<path>/`。
 

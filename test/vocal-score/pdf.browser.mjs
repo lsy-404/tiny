@@ -12,9 +12,16 @@ const q=705600000;
 const project={version:153,projectName:'Pitch study',time:{tempo:[{position:0,bpm:96}],meter:[{index:0,numerator:4,denominator:4}]},tracks:[{name:'Lead',mainGroup:{uuid:'lead',notes:Array.from({length:32},(_,index)=>({onset:index*q,duration:q,pitch:[60,64,67,72,71,67,65,64][index%8],lyrics:'la'}))}},{name:'Low',mainGroup:{uuid:'low',notes:Array.from({length:8},(_,index)=>({onset:index*q*4,duration:q*4,pitch:48,lyrics:'la'}))}}]};
 try{
   const page=await browser.newPage({locale:'zh-CN',viewport:{width:1440,height:1080},acceptDownloads:true});
-  const errors=[],external=[];
+  const errors=[],external=[],edgeAnalytics=[];
   page.on('pageerror',error=>errors.push(error.message));
-  page.on('request',request=>{if(!request.url().startsWith(base)&&!request.url().startsWith('blob:')&&!request.url().startsWith('data:'))external.push(request.url());});
+  page.on('request',request=>{
+    const url=request.url();
+    if(process.env.ALLOW_CLOUDFLARE_ANALYTICS==='1'&&/^https:\/\/static\.cloudflareinsights\.com\/beacon\.min\.js(?:\/|$)/.test(url)){edgeAnalytics.push(url);return;}
+    if(!url.startsWith(base)&&!url.startsWith('blob:')&&!url.startsWith('data:')){
+      if(process.env.ALLOW_CLOUDFLARE_ANALYTICS==='1'&&new URL(url).origin===new URL(base).origin&&new URL(url).pathname==='/cdn-cgi/rum'){edgeAnalytics.push(url);return;}
+      external.push(url);
+    }
+  });
   await page.goto(base);await page.waitForFunction(()=>!document.querySelector('#file-input')?.disabled);
   assert.equal(await page.locator('#file-count').textContent(),'0');
   assert.equal(await page.locator('#demo-button').count(),0);
@@ -75,5 +82,5 @@ try{
   const mobileNavigation=await page.locator('.pdf-viewer__navigation').boundingBox(),mobileZoom=await page.locator('.pdf-viewer__zoom').boundingBox();assert(mobileNavigation.x+mobileNavigation.width<=mobileZoom.x+1,'Mobile PDF controls stay separate');
   if(out)await page.screenshot({path:path.join(out,'pdf-mobile.png'),fullPage:false});
   assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
-  console.log(JSON.stringify({status:'passed',formats:Object.keys(formats),files:files.length,browserErrors:errors.length,externalRequests:external.length}));
+  console.log(JSON.stringify({status:'passed',formats:Object.keys(formats),files:files.length,browserErrors:errors.length,externalRequests:external.length,edgeAnalyticsRequests:edgeAnalytics.length}));
 }finally{await browser.close();}
