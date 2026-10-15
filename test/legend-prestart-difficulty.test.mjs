@@ -1,7 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const root = resolve(new URL('..', import.meta.url).pathname);
+const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const runtime = await readFile(resolve(root, 'games/cassandri-legend/game.js'), 'utf8');
 
 if (!runtime.includes('document.getElementById("btnNewGame").onclick=()=>openNewGameDifficulty();')) {

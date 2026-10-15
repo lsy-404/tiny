@@ -1,8 +1,9 @@
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const root=resolve(new URL('..',import.meta.url).pathname);
+const root=resolve(fileURLToPath(new URL('..',import.meta.url)));
 const runtime=await readFile(resolve(root,'games/cassandri-legend/game.js'),'utf8');
 const start=runtime.indexOf('function autoBattleDecide()');
 const end=runtime.indexOf('\nfunction simulateBossSkip()',start);

@@ -1,7 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const root=resolve(new URL('..',import.meta.url).pathname);
+const root=resolve(fileURLToPath(new URL('..',import.meta.url)));
 const runtime=await readFile(resolve(root,'games/cassandri-legend/game.js'),'utf8');
 const helper=runtime.match(/function restoreStolenEquipment\(\){[\s\S]*?\n\}/)?.[0];
 if(!helper)throw new Error('Could not extract the stolen-equipment restoration helper.');
