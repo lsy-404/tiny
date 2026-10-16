@@ -32,6 +32,7 @@ const source = {
 
 test('parses an S5P project in blicks with tempo and meter changes and trailing NULs', () => {
   const project = s5p.parse(encode(`${JSON.stringify(source)}\0\0\0`), 'old-song.s5p');
+  assert.deepEqual(project.tracks.map(track => track.singer), ['Eleanor', 'Eleanor'], 'dbName is the voice bank');
   assert.equal(project.format, 'Synthesizer V');
   assert.equal(project.title, 'old-song');
   assert.equal(project.version, 7);

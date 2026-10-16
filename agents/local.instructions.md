@@ -7,3 +7,4 @@ applyTo: '**'
 - 审计保存在 agents，测试仅在根 test。
 - 发布只使用已确认的 My 账户与 minigames 服务。
 - 协作分支本地合并 main；按实时保护状态执行 Git 交付。
+- 仓库未要求 PR 时不开 PR：完成后直接合并进 main 并推送，立即部署（Workers Builds minigames），不再等待确认。

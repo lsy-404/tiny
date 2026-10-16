@@ -66,6 +66,7 @@ wave_parts:
 
 test('parses an OpenUtau project with parts, extensions, rests, tempo and meter changes', () => {
   const project = ustx.parse(encode(modern), 'spring.ustx');
+  assert.deepEqual(project.tracks.map(track => track.singer ?? ''), project.tracks.map(track => track.name === 'Backing' ? '' : 'Teto'), 'each track keeps its singer; an empty singer names none');
   assert.equal(project.format, 'OpenUtau');
   assert.equal(project.title, 'Spring Song');
   assert.equal(project.version, '0.6');

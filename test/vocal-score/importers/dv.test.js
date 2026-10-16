@@ -69,6 +69,7 @@ const simple = features => singingTrack('Vocal', [{ notes: [
 
 test('reads DeepVocal notes, lyrics and pitches and drops rests', () => {
   const result = dv.parse(project({ tracks: [simple] }), 'C:/songs/demo.dv');
+  assert.equal(result.tracks[0].singer, 'voice bank', 'each segment names its voice bank');
   assert.equal(result.format, 'DeepVocal');
   assert.equal(result.title, 'demo');
   assert.equal(result.version, 5);

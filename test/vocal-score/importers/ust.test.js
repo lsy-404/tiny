@@ -28,6 +28,7 @@ test('parses a UTF-8 UST 2.0 project with rests, extensions and tempo changes', 
     '[#TRACKEND]'
   ].join('\r\n');
   const project = ust.parse(encode(text), 'C:\\songs\\sakura.ust');
+  assert.equal(project.tracks[0].singer, 'uta', 'the voice bank is the last segment of VoiceDir');
   assert.equal(project.format, 'UTAU');
   assert.equal(project.title, 'さくら');
   assert.equal(project.version, '2.0');

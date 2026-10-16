@@ -42,6 +42,7 @@ const sequence = () => ({
 
 test('VPR projects keep singing tracks, part offsets, lyrics and extensions', () => {
   const project = vpr.parse(pack(sequence()), 'demo.vpr');
+  assert.deepEqual(project.tracks.map(track => track.singer), ['VY1V5', 'VY1V5'], 'parts without a voice use the only voice of the project');
   assert.equal(project.format, 'VOCALOID 5/6');
   assert.equal(project.title, 'Demo Song');
   assert.equal(project.version, '5.0.2');

@@ -20,6 +20,8 @@ function emptyTuning() {
     curveMode: null,
     curveRepresentativeCents: 0,
     curveApproximate: false,
+    autoCurvePointCount: 0,
+    autoCurveRepresentativeCents: 0,
     pitchControlCurveCount: 0,
     expression: {},
     systemExpression: {},
@@ -291,7 +293,7 @@ test('returns a fresh canonical model aligned to quantized MusicXML timing', () 
   assert.deepEqual(result.model, {
     divisions: 16,
     measures: [{ index: 0, start: 0, end: 64, meter: { numerator: 4, denominator: 4 } }],
-    tracks: [{ id: 'voice', name: 'Lead', clef: 'treble', percussion: false, notes: [
+    tracks: [{ id: 'voice', name: 'Lead', clef: 'treble', percussion: false, singer: '', singerChanges: [], notes: [
       { ...firstNote, tuning: emptyModelTuning() },
       { ...secondNote, tuning: emptyModelTuning() }
     ] }],
@@ -326,7 +328,7 @@ test('merges disjoint lower-track notes upward and retains their provenance', ()
     movedNoteCount: 1,
     sourcePartCount: 2,
     outputPartCount: 1,
-    moves: [{ fromId: 'lower', fromName: 'Voice B', toId: 'upper', toName: 'Voice A', count: 1 }],
+    moves: [{ fromId: 'lower', fromName: 'Voice B', toId: 'upper', toName: 'Voice A', count: 1, kept: 0 }],
     roles: [{ id: 'upper', name: 'Voice A', role: 'mixed', overlapRatio: 0 }]
   });
   assert.deepEqual(result.model.tracks[0].notes.map(note => [note.start, note.end, note.sourceTrackId]), [
@@ -446,7 +448,7 @@ test('keeps any note with partial or simultaneous overlap whole in its original 
   assert.equal(result.merging.roles[1].overlapRatio, 0.5);
 });
 
-test('skips empty upper tracks, respects selection order, and preserves simultaneous notes', () => {
+test('skips empty upper tracks, respects selection order, and moves a chord with its phrase', () => {
   const project = {
     tracks: [
       { id: 'empty', name: 'Empty', notes: [] },
@@ -462,12 +464,105 @@ test('skips empty upper tracks, respects selection order, and preserves simultan
     warnings: []
   };
   const result = createScore(project, { trackIds: ['split', 'solo', 'empty'], mergeContinuations: true });
-  assert.deepEqual(result.model.tracks.map(track => track.id), ['solo', 'split']);
+  assert.deepEqual(result.model.tracks.map(track => track.id), ['solo']);
   assert.equal(result.merging.sourcePartCount, 3);
-  assert.equal(result.merging.outputPartCount, 2);
-  assert.equal(result.merging.movedNoteCount, 1);
+  assert.equal(result.merging.outputPartCount, 1);
+  assert.equal(result.merging.movedNoteCount, 2, 'the two-note chord moves as one phrase instead of being split across staves');
   assert.deepEqual(result.model.tracks.flatMap(track => track.notes).map(note => note.pitch).sort((a, b) => a - b), [60, 62, 67]);
   assert.equal(result.stats.noteCount, 3);
+});
+
+// Three la's per bar on beats 1–3 in each listed bar, so every bar is one phrase.
+function sungBars(id, name, bars, pitch, extra = {}) {
+  return { id, name, ...extra, notes: bars.flatMap(bar => [0, 1, 2].map(beat => ({ onset: QUARTER * (bar * 4 + beat), duration: QUARTER, pitch, lyrics: 'la', ...(extra.singer ? { singer: extra.singer } : {}) }))) };
+}
+const barProject = tracks => ({ title: 'Sections', tracks, meters: [{ index: 0, numerator: 4, denominator: 4 }], tempos: [{ position: 0, bpm: 120 }], warnings: [] });
+
+test('merges a part that sings while an earlier one rests and keeps a harmony part whole', () => {
+  // Verse sings bars 1–2 and Chorus bars 3–4 (one singer split over two tracks); Harmony sings through all four bars.
+  const project = barProject([sungBars('verse', 'Verse', [0, 1], 64), sungBars('harmony', 'Harmony', [0, 1, 2, 3], 57), sungBars('chorus', 'Chorus', [2, 3], 65)]);
+  const result = createScore(project, { mergeContinuations: true });
+  assert.deepEqual(result.model.tracks.map(track => track.id), ['verse', 'harmony']);
+  assert.deepEqual(result.merging.moves, [{ fromId: 'chorus', fromName: 'Chorus', toId: 'verse', toName: 'Verse', count: 6, kept: 0 }]);
+  assert.ok(result.model.tracks[1].notes.every(note => note.sourceTrackId === 'harmony'), 'the harmony is not split into the verse rests');
+  assert.ok(result.model.tracks.every(track => track.notes.every(note => note.voice === 1)));
+});
+
+test('lets a tunable share of overlap through and leaves the overlapping phrase in its own part', () => {
+  // Chorus sings bars 5–14 and also echoes bar 1 under the verse: 3 of its 33 beats overlap (9%).
+  const project = barProject([sungBars('verse', 'Verse', [0, 1, 2, 3], 64), sungBars('chorus', 'Chorus', [0, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], 65)]);
+  assert.equal(createScore(project, { mergeContinuations: true, mergeOverlap: 0 }).merging.movedNoteCount, 0, 'no overlap allowed');
+  assert.equal(createScore(project, { mergeContinuations: true }).merging.movedNoteCount, 0, 'the default 5% is below 9%');
+  const tolerant = createScore(project, { mergeContinuations: true, mergeOverlap: 0.1 });
+  assert.deepEqual(tolerant.merging.moves, [{ fromId: 'chorus', fromName: 'Chorus', toId: 'verse', toName: 'Verse', count: 30, kept: 3 }]);
+  assert.deepEqual(tolerant.model.tracks.map(track => track.notes.length), [42, 3]);
+  assert.throws(() => createScore(project, { mergeOverlap: 0.8 }), /mergeOverlap/);
+});
+
+test('merges only vocal parts and leaves instrumental parts as they are', () => {
+  const piano = { ...sungBars('piano', 'Piano', [2, 3], 48), instrument: { name: 'Piano', family: 'keyboard', order: 40, clef: 'bass', percussion: false } };
+  const project = barProject([sungBars('verse', 'Verse', [0, 1], 64), piano, sungBars('chorus', 'Chorus', [2, 3], 65)]);
+  const result = createScore(project, { mergeContinuations: true, preserveOrder: true });
+  assert.equal(result.merging.enabled, true);
+  assert.deepEqual(result.model.tracks.map(track => track.id), ['verse', 'piano']);
+  assert.deepEqual(result.merging.moves.map(move => [move.fromId, move.toId]), [['chorus', 'verse']]);
+  assert.ok(result.model.tracks[1].notes.every(note => note.sourceTrackId === 'piano'));
+  assert.deepEqual(result.merging.roles.map(role => role.id), ['verse'], 'only vocal parts get a merge role');
+});
+
+test('keeps different voice banks apart unless merging across them is allowed, and marks where the voice bank changes', () => {
+  const project = barProject([sungBars('a', 'A', [0, 1], 64, { singer: 'Mai' }), sungBars('b', 'B', [2, 3], 64, { singer: 'Saki' })]);
+  const apart = createScore(project, { mergeContinuations: true });
+  assert.equal(apart.stats.partCount, 2);
+  assert.deepEqual(apart.model.tracks.map(track => [track.singer, track.singerChanges]), [['Mai', []], ['Saki', []]]);
+  const merged = createScore(project, { mergeContinuations: true, mergeAcrossSingers: true });
+  assert.equal(merged.stats.partCount, 1);
+  assert.deepEqual(merged.model.tracks[0].singerChanges, [{ measureIndex: 2, offset: 0, singer: 'Saki' }]);
+  const same = createScore(barProject([sungBars('a', 'A', [0, 1], 64, { singer: 'Mai' }), sungBars('b', 'B', [2, 3], 64, { singer: 'Mai' })]), { mergeContinuations: true });
+  assert.equal(same.stats.partCount, 1, 'the same voice bank merges by default');
+  assert.deepEqual(same.model.tracks[0].singerChanges, []);
+  assert.throws(() => createScore(project, { mergeAcrossSingers: 'yes' }), /mergeAcrossSingers/);
+});
+
+test('reads voice banks per note group, with groups without one singing with the track', () => {
+  const source = makeProject({
+    library: [
+      { uuid: 'own', notes: [{ onset: 0, duration: QUARTER, pitch: 60, lyrics: 'a' }] },
+      { uuid: 'inherit', notes: [{ onset: 0, duration: QUARTER, pitch: 62, lyrics: 'b' }] }
+    ],
+    tracks: [{ name: 'Voice', mainRef: { database: { name: 'Mai' } }, mainGroup: { uuid: 'main', notes: [{ onset: 0, duration: QUARTER, pitch: 64, lyrics: 'c' }] }, groups: [
+      { groupID: 'own', blickOffset: QUARTER, database: { name: 'Saki' } },
+      { groupID: 'inherit', blickOffset: QUARTER * 2, database: { name: '' } }
+    ] }]
+  });
+  const parsed = parseSvp(JSON.stringify(source));
+  assert.deepEqual(parsed.tracks[0].notes.map(note => [note.lyrics, note.singer]), [['c', 'Mai'], ['a', 'Saki'], ['b', 'Mai']]);
+  assert.equal(parsed.tracks[0].singer, 'Mai');
+  const result = createScore(parsed);
+  assert.deepEqual(result.model.tracks[0].singerChanges, [{ measureIndex: 0, offset: 16, singer: 'Saki' }, { measureIndex: 0, offset: 32, singer: 'Mai' }], 'offsets are in divisions, 16 per quarter');
+});
+
+test('reads flat Synthesizer V curve points and reports the automatic pitch without applying it', () => {
+  const source = makeProject({
+    library: [],
+    tracks: [{ name: 'Lead', mainRef: { systemPitchDelta: { mode: 'linear', points: [0, -300, QUARTER * 2, -300] } }, mainGroup: {
+      uuid: 'main', parameters: { pitchDelta: { mode: 'linear', points: [0, 120, QUARTER * 2, 120] } }, notes: [{ onset: 0, duration: QUARTER, pitch: 60, lyrics: 'la' }]
+    } }]
+  });
+  const parsed = parseSvp(JSON.stringify(source));
+  const { tuning } = parsed.tracks[0].notes[0];
+  assert.deepEqual([tuning.curvePointCount, tuning.curveRepresentativeCents, tuning.autoCurvePointCount, tuning.autoCurveRepresentativeCents], [2, 120, 2, -300]);
+  assert.deepEqual([parsed.tuningSummary.pitchDeltaPoints, parsed.tuningSummary.autoPitchCurves, parsed.tuningSummary.autoPitchPoints], [2, 1, 2]);
+  const result = createScore(parsed, { pitchAdjustment: { enabled: true, thresholdCents: 50 } });
+  assert.equal(result.model.tracks[0].notes[0].pitch, 61, 'the manual +120 cents raises the note; the automatic −300 cents does not');
+  assert.deepEqual(result.pitchAdjustments.auto, { noteCount: 1, offsetNoteCount: 1 });
+  assert.equal(result.pitchAdjustments.notes[0].autoCents, -300);
+});
+
+test('sums the remaining-cents notice into one line per part', () => {
+  const notes = [20, 30, 40, 60].map((detuneCents, index) => ({ onset: QUARTER * index, duration: QUARTER, pitch: 60, lyrics: 'la', tuning: { detuneCents } }));
+  const result = createScore(barProject([{ id: 'v', name: 'V', notes }]), { pitchAdjustment: { enabled: true, thresholdCents: 50 } });
+  assert.deepEqual(result.warnings.filter(warning => warning.includes('remaining')), ['V: 4 note(s) keep a remaining tuning deviation as metadata, not engraved.']);
 });
 
 function rhythmProject(notes, meter = { index: 0, numerator: 4, denominator: 4 }, tempos = [{ position: 0, bpm: 120 }]) {

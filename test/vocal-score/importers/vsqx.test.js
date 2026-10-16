@@ -80,6 +80,7 @@ const VSQ3 = `<?xml version="1.0" encoding="UTF-8"?>
 
 test('vsq4 projects keep notes, lyrics, extensions, part offsets and tracks', () => {
   const project = vsqx.parse(encode(VSQ4), 'songs/demo.vsqx');
+  assert.equal(project.tracks[0].singer, 'VY1V4', 'a part names its singer by bank and program in the voice table');
   assert.equal(project.format, 'VOCALOID 3/4');
   assert.equal(project.title, 'demo');
   assert.equal(project.version, '4.0.0.3');
