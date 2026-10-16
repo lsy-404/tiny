@@ -10,3 +10,7 @@
 - 临时零重叠规则下：pnpm 测试（含两份样本）147 通过；浏览器（vite 5175，合成 SVP）：4→3 谱表、副歌并入主歌、和声完整、Saki 默认不并；开启后 4→2，声部名“主歌（Mai）”，第 9 小节上方“Saki”，五线谱/简谱声部名可点击编辑；+130¢ 手动曲线 E4→F4，剩余音分提示一条；自动音高参考行显示。随后恢复 TODO(human)：合并相关 9 个测试待规则实现。
 - 新增 .claude/launch.json（vocal-score 开发服务器）。
 - 用户要求直接完成合并并部署：chooseMergeTarget(candidates, tolerance)；候选改报 blockedShare；createScore mergeOverlap（0–0.5，默认 0.05）；App 声部整理新增“允许重叠”（不允许 / 2% / 5% / 10% / 20%，旧文档回落 5%）；三语 3 条；新测试 tunable overlap。pnpm 测试（含两份样本）148 通过；浏览器确认选项与默认值。README 更新合并、声库、自动音高说明。记忆与 local.instructions 记录“无 PR 直接合并 main 并立即部署”。
+- 提交 a1b8811（仅本任务；App.vue、i18n.js、README.md、tasks.md 暂存“HEAD + 本任务改动”，028 改动留在工作区）。干净工作树（git worktree，pnpm install --frozen-lockfile）：pnpm run build 通过，入口 index-AX1YoPIk.js；pnpm run test 退出 0（vocal-score 158 项：157 通过、1 项因该工作树无 Playwright 跳过，含两份 SVP 样本）。
+- main 快进 28f0771 → a1b8811 并推送 main 与 feature/vocal-score-refresh；Workers Builds 部署后 tiny.leisiyu.dev/projects/vocal-score/ 入口为 index-AX1YoPIk.js（推送后约 10 s 可见），与本地干净构建一致。
+- 线上（内置浏览器，合成 SVP）：默认 4→3 谱表、副歌并入主歌、和声完整、Saki 不并、允许重叠默认 5%、声部列表显示声库；开启跨声库与显示演唱者后 4→2，声部名“主歌（Mai）”“和声（Mai）”，谱面一处“Saki”；调校页 +130¢ 手动曲线 E4→F4，自动音高 −180¢ 仅作参考（不修正），剩余音分提示一条。无错误提示。
+- 未运行：release-check（main 工作区的 dist 含 028 未提交改动，与线上不对应，改以入口哈希一致核对）；Playwright 浏览器测试套件。
