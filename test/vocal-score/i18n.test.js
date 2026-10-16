@@ -65,7 +65,7 @@ test('App and lyric editor messages exist in all locales and resolve their place
     '保存失败；请保留原文件并检查浏览器存储空间。', '移除失败，请重试。',
     '无法读取浏览器存储；请检查浏览器的数据权限。', '（异词）', '和弦为自动推测（?）',
     'lyricEditor.notes', 'lyricEditor.correctTitle', 'lyricEditor.correctPlaceholder', 'lyricEditor.writeAs', 'lyricEditor.writeText', 'lyricEditor.writeReading', 'lyricEditor.markChange', 'lyricEditor.markSame', 'lyricEditor.markLow', 'lyricEditor.markNone', 'lyricEditor.caretNone', 'lyricEditor.caretHint', 'lyricEditor.voiceSummary', 'lyricEditor.uncovered', 'lyricEditor.correctCount', 'lyricEditor.noChange', 'lyricEditor.editNotes', 'lyricEditor.beats', 'lyricEditor.position',
-    '主菜单', '加载制谱引擎', '准备字体', '恢复浏览器中的工程', '{count} 个工程', '检查 PDF 导出', '排版《{title}》', '五线谱暂不可用，简谱仍可使用', '此浏览器无法在后台生成 PDF', '仍在排版，可先进入', '准备就绪', '正在启动', '合并连续音符', '不合并', '低 · 同音延长', '中 · 含元音续唱', '高 · 含短装饰音', '{count} 个续唱音符并入前一字',
+    '主菜单', '加载制谱引擎', '准备字体', '加载歌词编辑器', '准备歌词匹配 Worker', '准备 PDF 导出 Worker', '仍在准备，可先进入', '此浏览器不支持 Worker，歌词匹配在主线程运行', '五线谱暂不可用，简谱仍可使用', '此浏览器无法在后台生成 PDF', '准备就绪', '正在启动', '合并连续音符', '不合并', '低 · 同音延长', '中 · 含元音续唱', '高 · 含短装饰音', '{count} 个续唱音符并入前一字',
     '乐谱预览', '上一页', '下一页', '适合页面', '第 {page} 页，共 {total} 页',
     '下载 PDF', '方向', '横向', '纵向', '纸张', '缩放', '适合页宽',
     '正在恢复文件…', '正在保存…', '已保存在此浏览器', '已移除'

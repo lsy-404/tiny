@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {alignLyricsToTracks, applyAlignedLyrics, normalizePinyin} from '../../apps/vocal-score/src/lib/lyric-alignment.js';
+import {alignLyricsToTracks, normalizePinyin} from '../../apps/vocal-score/src/lib/lyric-alignment.js';
+import {alignLyrics, applyAlignedLyrics, warmLyricAlignment} from '../../apps/vocal-score/src/lib/lyric-worker.js';
 
 const note = lyrics => ({lyrics, onset: 0, duration: 100, pitch: 60});
 const track = (id, lyrics) => ({id, name: id, notes: lyrics.split(' ').map(note)});
@@ -64,4 +65,15 @@ test('writes pinyin readings on request and marks a syllable aligned to a differ
   assert.equal(different.tokens.find(token => token.value === '都').status, 'low', 'a syllable sung differently is aligned but flagged');
   assert.equal(alignLyricsToTracks('', tracks).tokens.length, 0);
   assert.equal(alignLyricsToTracks('火星', tracks).changes.length, 0, 'two syllables are too few to place');
+});
+
+test('aligns through the worker client, falling back to the page where workers are unavailable', async () => {
+  assert.equal(typeof Worker, 'undefined', 'Node has no Web Worker, so this exercises the fallback path');
+  assert.equal(await warmLyricAlignment(), false);
+  const tracks = [track('lead', 'wo men yi qi chang ge'), track('echo', 'yi qi chang')];
+  const text = '我们一起唱歌';
+  const viaClient = await alignLyrics(text, tracks, {write: 'typed'});
+  assert.deepEqual(viaClient, alignLyricsToTracks(text, tracks.map(({id, name, notes}) => ({id, name, notes: notes.map(({lyrics}) => ({lyrics}))}))));
+  assert.equal(applyAlignedLyrics(tracks, viaClient.changes), 9);
+  assert.equal(tracks.map(item => item.notes.map(note => note.lyrics).join('')).join('|'), '我们一起唱歌|一起唱');
 });
