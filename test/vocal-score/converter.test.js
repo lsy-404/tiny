@@ -565,6 +565,74 @@ test('sums the remaining-cents notice into one line per part', () => {
   assert.deepEqual(result.warnings.filter(warning => warning.includes('remaining')), ['V: 4 note(s) keep a remaining tuning deviation as metadata, not engraved.']);
 });
 
+// Notes from [onset, duration, pitch, lyrics] in quarters, as one voice in 4/4.
+const quarterNotes = rows => ({ title: 'Style', tracks: [{ id: 'v', name: 'V', notes: rows.map(([onset, duration, pitch, lyrics = 'la']) => ({ onset: Math.round(QUARTER * onset), duration: Math.round(QUARTER * duration), pitch, lyrics })) }], meters: [{ index: 0, numerator: 4, denominator: 4 }], tempos: [{ position: 0, bpm: 120 }], warnings: [] });
+const count = (text, pattern) => (text.match(pattern) || []).length;
+
+test('writes melismas with an extender line, a slur or both, and closes a slur across a barline', () => {
+  // "la" sung over three pitches, the last crossing into bar 2, then "li".
+  const project = quarterNotes([[0, 2, 60, 'la'], [2, 1, 62, '-'], [3, 2, 64, '-'], [5, 1, 65, 'li']]);
+  const extender = createScore(project);
+  assert.doesNotMatch(extender.xml, /<slur/);
+  assert.match(extender.xml, /<text>la<\/text><extend type="start"\/>/);
+  const slur = createScore(project, { melisma: 'slur' });
+  assert.equal(count(slur.xml, /<slur number="1" type="start"\/>/g), 1);
+  assert.equal(count(slur.xml, /<slur number="1" type="stop"\/>/g), 1);
+  assert.doesNotMatch(slur.xml, /<extend/, 'a slur alone draws no extender line');
+  assert.match(slur.xml, /<measure number="2">.*?<tied type="stop"\/><slur number="1" type="stop"\/>/, 'the slur ends on the tied half after the barline');
+  const both = createScore(project, { melisma: 'both' });
+  assert.match(both.xml, /<slur number="1" type="start"\/>.*?<extend type="start"\/>/);
+  assert.throws(() => createScore(project, { melisma: 'dots' }), /melisma/);
+});
+
+test('marks triplets with a bracket, the number alone, or only until the rhythm repeats', () => {
+  // Five long-short triplet beats (♩♪³) in a row, across the barline.
+  const project = quarterNotes(Array.from({ length: 5 }, (_, beat) => [[beat, 2 / 3, 60], [beat + 2 / 3, 1 / 3, 62]]).flat());
+  assert.equal(count(createScore(project, { triplets: true }).xml, /<tuplet type="start" bracket="yes"\/>/g), 5);
+  assert.equal(count(createScore(project, { triplets: true, tupletMarks: 'number' }).xml, /<tuplet type="start" bracket="no"\/>/g), 5);
+  const simile = createScore(project, { triplets: true, tupletMarks: 'simile' });
+  assert.equal(count(simile.xml, /<tuplet type="start" bracket="no"\/>/g), 2, 'the first two repeats keep their number');
+  assert.equal(count(simile.xml, /<tuplet type="start" bracket="no" show-number="none"\/>/g), 3, 'later repeats, also after the barline, leave it out');
+  assert.throws(() => createScore(project, { tupletMarks: 'stars' }), /tupletMarks/);
+});
+
+test('writes long-short triplets as straight eighths under a Swing marking and warns about straight eighths', () => {
+  // Five swung beats, then one beat of straight eighths.
+  const project = quarterNotes([...Array.from({ length: 5 }, (_, beat) => [[beat, 2 / 3, 60], [beat + 2 / 3, 1 / 3, 62]]).flat(), [5, 0.5, 64], [5.5, 0.5, 65]]);
+  const swung = createScore(project, { swing: true });
+  assert.equal(swung.swing.beatCount, 5);
+  assert.doesNotMatch(swung.xml, /<tuplet/);
+  assert.equal(count(swung.xml, /<type>eighth<\/type>/g), 12, 'every beat is two straight eighths');
+  assert.match(swung.xml, /<measure number="1"><attributes>.*?<\/attributes><direction placement="above"><direction-type><words font-weight="bold">Swing \(♫ = ♩♪³\)<\/words><\/direction-type><sound><swing><first>2<\/first><second>1<\/second><swing-type>eighth<\/swing-type><\/swing><\/sound><\/direction>/);
+  assert.deepEqual(swung.warnings.filter(warning => warning.startsWith('Swing')), ['Swing notation: 1 beat(s) with straight eighths will read as swung.']);
+  const plain = createScore(project, { triplets: true });
+  assert.equal(plain.swing.beatCount, 0);
+  assert.doesNotMatch(plain.xml, /Swing/);
+  assert.throws(() => createScore(project, { swing: 'yes' }), /swing/);
+});
+
+test('merges automatically note by note: held notes join, short endings are glides or ornaments, longer notes stay', () => {
+  // la (C4) with a 32nd glide up to D4 before "li" on D4; lu (E4) with a 32nd turn down before "le" on F4;
+  // le held as "-" at the same pitch; wo with an eighth "-" at another pitch, a real melisma.
+  const project = quarterNotes([[0, 7 / 8, 60, 'la'], [7 / 8, 1 / 8, 62, '-'], [1, 1, 62, 'li'], [2, 7 / 8, 64, 'lu'], [2 + 7 / 8, 1 / 8, 63, '-'], [3, 0.5, 65, 'le'], [3.5, 0.5, 65, '-'], [4, 0.5, 67, 'wo'], [4.5, 0.5, 69, '-']]);
+  const style = glides => createScore(project, { grid: 32, noteMerge: 'auto', glides });
+  const line = style('line');
+  assert.deepEqual([line.noteMerge.mergedCount, line.noteMerge.glideCount, line.noteMerge.ornamentCount, line.stats.noteCount], [3, 1, 1, 6]);
+  assert.match(line.xml, /<slide number="1" type="start" line-type="solid"\/><\/notations><lyric><text>la<\/text>/, 'a slide leaves the glide\'s syllable');
+  assert.match(line.xml, /<slide number="1" type="stop"\/><\/notations><lyric><text>li<\/text>/, 'and lands on the next syllable');
+  assert.equal(count(line.xml, /<slide number="1" type="start"/g), 1, 'an ornament gets no slide');
+  const grace = style('grace');
+  assert.equal(count(grace.xml, /<grace slash="yes"\/>/g), 2);
+  assert.match(grace.xml, /<grace slash="yes"\/><pitch><step>D<\/step><octave>4<\/octave><\/pitch>.*?<text>li<\/text>/);
+  const absorb = style('absorb');
+  assert.equal(count(absorb.xml, /<slide|<grace/g), 0);
+  assert.equal(absorb.stats.noteCount, 6);
+  const keep = style('keep');
+  assert.deepEqual([keep.noteMerge.glideCount, keep.noteMerge.ornamentCount, keep.stats.noteCount], [0, 0, 8], 'only the held note joins');
+  assert.equal(line.model.tracks[0].notes.at(-1).lyrics, '-', 'the eighth at another pitch stays a melisma note');
+  assert.throws(() => createScore(project, { glides: 'blur' }), /glides/);
+});
+
 function rhythmProject(notes, meter = { index: 0, numerator: 4, denominator: 4 }, tempos = [{ position: 0, bpm: 120 }]) {
   let onset = 0;
   return { title: 'Rhythm', tracks: [{ id: 'v', name: 'V', notes: notes.map(([duration, pitch = 60]) => {

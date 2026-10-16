@@ -10,6 +10,7 @@ test('translates converter warnings and primary errors with their parameters', t
   setLanguage('en');
   assert.equal(translateWarning('Track Alto: group missing-1 was not found.'), 'Alto: note group missing-1 was not found.');
   assert.equal(translateWarning('Lead: 12 note(s) keep a remaining tuning deviation as metadata, not engraved.'), 'Lead: 12 notes keep their remaining cents as metadata, not engraved.');
+  assert.equal(translateWarning('Swing notation: 3 beat(s) with straight eighths will read as swung.'), 'Swing notation: 3 beats have straight eighths that will read as swung.');
   assert.equal(translateWarning('Lead: 4 note(s) shifted by grid quantization.'), '4 note(s) in Lead were shifted to the rhythm grid.');
   assert.equal(translateWarning('Lead: pitch curve uses a linear sampling approximation for note adjustment.'), 'Lead: a linear sampling approximation was used to adjust notes from the pitch curve.');
   assert.equal(translateWarning('Lead: pitch 130 is outside the supported MIDI range 0–127 or uses fractional semitones.'), 'Lead: pitch 130 is outside MIDI range 0–127 or is not an integer semitone.');

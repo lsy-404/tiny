@@ -59,8 +59,9 @@ try{
   if(out)await page.screenshot({path:path.join(out,'pdf-numbered-preview.png'),fullPage:false});
   const files=(process.env.SVP_SAMPLE_FILES||'').split(';').filter(Boolean);
   if(files.length){
-    await page.locator('#file-input').setInputFiles(files);await page.waitForFunction(()=>document.querySelector('#note-meta')?.textContent.includes('573'),null,{timeout:60000});await ready();
-    assert.match(await page.locator('#note-meta').textContent(),/573/);assert.match(await page.locator('#measure-meta').textContent(),/102/);assert.equal(await page.locator('#key').inputValue(),'2');
+    await page.locator('#file-input').setInputFiles(files);await page.waitForFunction(()=>document.querySelector('#note-meta')?.textContent.includes('568'),null,{timeout:60000});await ready();
+    // 573 source notes; the default automatic merging joins 5 held notes into their syllables.
+    assert.match(await page.locator('#note-meta').textContent(),/568/);assert.match(await page.locator('#measure-meta').textContent(),/102/);assert.equal(await page.locator('#key').inputValue(),'2');
     assert.equal(await page.locator('#message.error').count(),0);
     await downloadPdf('pdf-vocal-staff.pdf');
     if(out)await page.screenshot({path:path.join(out,'pdf-staff-preview.png'),fullPage:false});
