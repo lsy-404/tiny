@@ -6,6 +6,7 @@ const root = path.resolve(__dirname, '../..');
 const routes = new Map([
   ['/',['test/vocal-score/staff-layout.browser.html','text/html; charset=utf-8']],
   ['/apps/vocal-score/src/lib/converter.js',['apps/vocal-score/src/lib/converter.js','text/javascript; charset=utf-8']],
+  ['/apps/vocal-score/src/lib/importers/model.js',['apps/vocal-score/src/lib/importers/model.js','text/javascript; charset=utf-8']],
   ['/apps/vocal-score/src/lib/modulation.js',['apps/vocal-score/src/lib/modulation.js','text/javascript; charset=utf-8']],
   ['/apps/vocal-score/src/lib/page-layout.js',['apps/vocal-score/src/lib/page-layout.js','text/javascript; charset=utf-8']],
   ['/apps/vocal-score/src/lib/pdf.js',['apps/vocal-score/src/lib/pdf.js','text/javascript; charset=utf-8']],
