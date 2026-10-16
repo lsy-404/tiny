@@ -1,123 +1,67 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {applyHanziMatch, applyLocatedLyrics, locatePastedLyrics, matchHanziLyrics, matchLevel, normalizePinyin} from '../../apps/vocal-score/src/lib/lyric-alignment.js';
+import {alignLyricsToTracks, applyAlignedLyrics, normalizePinyin} from '../../apps/vocal-score/src/lib/lyric-alignment.js';
 
 const note = lyrics => ({lyrics, onset: 0, duration: 100, pitch: 60});
+const track = (id, lyrics) => ({id, name: id, notes: lyrics.split(' ').map(note)});
+// The corrected lyric of each note, or the old one in brackets where nothing changes.
+const after = (result, tracks, trackIndex) => tracks[trackIndex].notes.map((item, noteIndex) => result.changes.find(change => change.trackIndex === trackIndex && change.noteIndex === noteIndex)?.to ?? `[${item.lyrics}]`).join('');
+const marked = (result, text) => result.tokens.filter(token => token.status === 'none').map(token => text.slice(token.start, token.end)).join('');
 
 test('normalizes tone marks, tone digits, ü, and v spellings', () => {
   assert.equal(normalizePinyin('lǚ3'), 'lv');
   assert.equal(normalizePinyin('lü4'), 'lv');
   assert.equal(normalizePinyin('NǏ3'), 'ni');
   assert.equal(normalizePinyin('ni2'), 'ni');
+  assert.equal(normalizePinyin('lue'), 'lve');
+  assert.equal(normalizePinyin('jv'), 'ju');
 });
 
-test('uses contextual pronunciation and matches a partial Chinese phrase', () => {
-  const notes = ['lead', 'chong2', '-', '', 'qing4', 'song1'].map(note);
-  const result = matchHanziLyrics('重庆', notes);
-  assert.deepEqual(result.matches.map(match => match.noteIndices), [[1, 4]]);
-  assert.deepEqual(result.matches[0].characters, ['重', '庆']);
+test('corrects every voice from one lyric pasted in any order, paragraphs and line breaks', () => {
+  // A made-up song: the lead sings two verses and the chorus twice; a second voice sings one line and the chorus.
+  const tracks = [
+    track('lead', 'chun feng chui guo shan gang hua kai man di xiang ye se wei lan xing guang can lan wo men yi qi chang ge wo men yi qi chang ge'),
+    track('second', 'yue liang sheng qi lai wo men yi qi chang ge')
+  ];
+  // Verses swapped, lines broken differently, punctuation, a line no voice sings, and the chorus written once.
+  const text = '夜色微澜，星光灿烂——\n\n春风吹过\n山岗花开满地香！\n月亮升起来\n这一句谁也没唱\n我们一起唱歌';
+  const result = alignLyricsToTracks(text, tracks);
+  assert.equal(after(result, tracks, 0), '春风吹过山岗花开满地香夜色微澜星光灿烂我们一起唱歌我们一起唱歌', 'a chorus written once covers each time it is sung');
+  assert.equal(after(result, tracks, 1), '月亮升起来我们一起唱歌');
+  assert.equal(marked(result, text), '这一句谁也没唱', 'only what no voice sings is marked as missing');
+  assert.equal(result.tokens.some(token => /[，——！\n]/u.test(token.value)), false, 'punctuation and line breaks are not syllables');
+  assert.deepEqual(result.voices.map(voice => [voice.name, voice.matched, voice.syllables, voice.uncovered]), [['lead', 31, 31, 0], ['second', 11, 11, 0]]);
+  assert.equal(applyAlignedLyrics(tracks, result.changes), 42);
+  assert.equal(tracks[1].notes[0].lyrics, '月');
+  assert.deepEqual(alignLyricsToTracks(text, tracks).changes, [], 'once corrected, the same lyric changes nothing');
+  assert.equal(alignLyricsToTracks(text, tracks).tokens.find(token => token.value === '月').status, 'same');
 });
 
-test('handles a standalone polyphonic character against either valid reading', () => {
-  const result = matchHanziLyrics('重', [note('chong'), note('zhong')]);
-  assert.deepEqual(result.matches.map(match => match.noteIndices), [[0], [1]]);
+test('tells apart the characters a reading cannot, such as 她, 他, 祂 and TA', () => {
+  const tracks = [track('v', 'ta ru bing mian ta chun bian xiao er ta wei ceng du wan')];
+  const result = alignLyricsToTracks('她 如冰面\n他 唇边笑\n而TA 未曾读完', tracks);
+  assert.equal(after(result, tracks, 0), '她如冰面他唇边笑而TA未曾读完');
 });
 
-test('surfaces repeated phrase positions rather than selecting one silently', () => {
-  const result = matchHanziLyrics('你好', ['ni', 'hao', 'other', 'ni3', 'hǎo'].map(note));
-  assert.deepEqual(result.matches.map(match => match.noteIndices), [[0, 1], [3, 4]]);
+test('keeps paired spellings, re-sung vowels, breaths, phoneme notes and spelling variants in step', () => {
+  const tracks = [track('v', 'jiang xin sheng juan ke na jiao ao br zou ou dao tian ya .l_y_E lue guo')];
+  tracks[0].notes[14].lyrics = '.l y E';
+  // 心声/新生 offers two spellings of the same syllables; 骄傲 is sung "jiao ao", 走 is "zou" held on "ou".
+  const text = '将心声/新生镌刻 那骄傲 走到天涯 掠过';
+  const result = alignLyricsToTracks(text, tracks);
+  assert.equal(after(result, tracks, 0), '将心声镌刻那骄傲[br]走[ou]到天涯[.l y E]掠过');
+  const statusOf = character => result.tokens.find(token => token.value === character).status;
+  assert.equal(statusOf('新'), statusOf('心'), 'the second spelling is marked like the first');
+  assert.equal(result.voices[0].uncovered, 0, 'breaths, re-sung vowels and phoneme notes need no pasted syllable');
 });
 
-test('matches existing Chinese and mixed Chinese/pinyin source lyrics', () => {
-  const chinese = matchHanziLyrics('重庆', [note('重'), note('庆'), note('song')]);
-  const mixed = matchHanziLyrics('你好', [note('ni'), note('好')]);
-  assert.deepEqual(chinese.matches.map(match => match.noteIndices), [[0, 1]]);
-  assert.deepEqual(mixed.matches.map(match => match.noteIndices), [[0, 1]]);
-});
-
-test('does not match lone markers or empty labels and leaves notes unchanged on zero match', () => {
-  const notes = ['-', '+', '', 'wrong'].map(note);
-  const before = structuredClone(notes);
-  const result = matchHanziLyrics('你好', notes);
-  assert.equal(result.matches.length, 0);
-  assert.equal(applyHanziMatch(notes, result.matches[0]), false);
-  assert.deepEqual(notes, before);
-});
-
-test('replaces only matched lyric notes and preserves their timing and pitch', () => {
-  const notes = [note('ni3'), note('-'), note('hao4'), note('')];
-  const beforeTiming = notes.map(({onset, duration, pitch}) => ({onset, duration, pitch}));
-  const match = matchHanziLyrics('你好', notes).matches[0];
-  assert.equal(applyHanziMatch(notes, match), true);
-  assert.deepEqual(notes.map(item => item.lyrics), ['你', '-', '好', '']);
-  assert.deepEqual(notes.map(({onset, duration, pitch}) => ({onset, duration, pitch})), beforeTiming);
-});
-
-test('locates a pasted phrase in the existing lyrics instead of replacing from the first note', () => {
-  const notes = ['你', '总', '是', '不', '肯', '承', '认', '-', '沉', '溺'].map(note);
-  const phrases = locatePastedLyrics('不肯承认', notes, {write: 'pinyin'});
-  assert.deepEqual(phrases.map(phrase => [phrase.candidates[phrase.chosen], phrase.tokens.map(token => token.value)]), [[[3, 4, 5, 6], ['bu', 'ken', 'cheng', 'ren']]]);
-  assert.equal(applyLocatedLyrics(notes, phrases), 4);
-  assert.deepEqual(notes.map(item => item.lyrics), ['你', '总', '是', 'bu', 'ken', 'cheng', 'ren', '-', '沉', '溺']);
-});
-
-test('follows the pasted order through repeated phrases and honours a chosen occurrence', () => {
-  const notes = ['ni', 'zong', 'shi', 'chen', 'ni', 'zai', 'ni', 'zong', 'shi'].map(note);
-  const ordered = locatePastedLyrics('你总是\n沉溺在，你总是', notes, {write: 'hanzi'});
-  assert.deepEqual(ordered.map(phrase => phrase.candidates[phrase.chosen]), [[0, 1, 2], [3, 4, 5], [6, 7, 8]]);
-  const chosen = locatePastedLyrics('你总是', notes, {write: 'hanzi', choices: {0: 1}});
-  assert.deepEqual(chosen[0].candidates, [[0, 1, 2], [6, 7, 8]]);
-  assert.deepEqual(chosen[0].candidates[chosen[0].chosen], [6, 7, 8]);
-});
-
-test('keeps typed words, falls back to other polyphonic readings, and reports phrases it cannot find', () => {
-  const notes = ['la', 'zhong', 'qing'].map(note);
-  const typed = locatePastedLyrics('zhong qing', notes);
-  assert.deepEqual(typed.map(phrase => [phrase.candidates[phrase.chosen], phrase.tokens.map(token => token.value)]), [[[1, 2], ['zhong', 'qing']]]);
-  assert.deepEqual(locatePastedLyrics('重庆', notes, {write: 'hanzi'})[0].candidates, [[1, 2]], 'chong qing in context, zhong as another reading of 重');
-  const missing = locatePastedLyrics('火星', notes, {write: 'hanzi'});
-  assert.equal(missing[0].chosen, -1);
-  assert.equal(applyLocatedLyrics(notes, missing), 0);
-});
-
-test('looks past breaths, re-sung vowels and phoneme notes, and accepts spelling variants', () => {
-  const notes = ['la', 'zou', 'ou', 'br', 'dao', 'tian', 'ya', '.l y E', 'lue'].map(note);
-  const phrases = locatePastedLyrics('走到天涯掠', notes, {write: 'hanzi'});
-  assert.deepEqual(phrases[0].candidates[phrases[0].chosen], [1, 4, 5, 6, 7]);
-  assert.equal(phrases[0].mismatches[phrases[0].chosen], 0);
-  assert.deepEqual(locatePastedLyrics('略', [note('lve')], {write: 'hanzi'})[0].candidates, [[0]], 'lüe, lve and lue are one syllable');
-});
-
-test('finds a phrase with a typo or a missing syllable as a labelled near match', () => {
-  const notes = ['wo', 'liao', 'jie', 'mei', 'ge', 'ren', 'de', 'mi', 'mi'].map(note);
-  const typo = locatePastedLyrics('我了改每个人', notes, {write: 'hanzi'});
-  assert.deepEqual(typo[0].candidates[typo[0].chosen], [0, 1, 2, 3, 4, 5]);
-  assert.equal(typo[0].mismatches[typo[0].chosen], 1);
-  const missing = locatePastedLyrics('我解每个人的', notes, {write: 'pinyin'});
-  assert.deepEqual(missing[0].candidates[missing[0].chosen], [0, 2, 3, 4, 5, 6], 'the note sung without a pasted syllable keeps its lyric');
-  applyLocatedLyrics(notes, missing);
-  assert.deepEqual(notes.map(item => item.lyrics).slice(0, 7), ['wo', 'liao', 'jie', 'mei', 'ge', 'ren', 'de']);
-  assert.equal(locatePastedLyrics('火星', notes, {write: 'hanzi'})[0].chosen, -1, 'short phrases are never matched approximately');
-});
-
-test('records where each pasted syllable was typed and how each phrase was found', () => {
-  const notes = ['ni', 'hao', 'shi', 'jie', 'wo', 'men', 'zai', 'yi', 'qi'].map(note);
-  const text = '你好，  世界 我们在一起吗';
-  const phrases = locatePastedLyrics(text, notes, {write: 'hanzi'});
-  assert.deepEqual(phrases.map(phrase => [phrase.text, phrase.start, phrase.end]), [['你好', 0, 2], ['世界', 5, 7], ['我们在一起吗', 8, 14]]);
-  assert.deepEqual(phrases[2].tokens.map(token => text.slice(token.start, token.end)).join(''), '我们在一起吗');
-  assert.deepEqual(phrases.map(phrase => phrase.via), ['reading', 'reading', 'approximate'], 'a phrase with one extra syllable is a near match');
-  assert.deepEqual(locatePastedLyrics('火星', notes).map(phrase => phrase.via), [null]);
-  assert.deepEqual(locatePastedLyrics('ni hao  shi', notes)[0].tokens.map(token => [token.start, token.end]), [[0, 2], [3, 6], [8, 11]]);
-});
-
-test('rates located phrases as exact, high or low confidence, and missing phrases as none', () => {
-  const notes = ['a', 'ni', 'hao', 'shi', 'jie', 'wo', 'men', 'zai', 'yi', 'qi', 'a'].map(note);
-  const levels = text => locatePastedLyrics(text, notes, {write: 'hanzi'}).map(matchLevel);
-  assert.deepEqual(levels('你好 世界'), ['exact', 'exact'], 'unique phrases on their usual readings');
-  assert.deepEqual(levels('啊'), ['high'], 'a short phrase found in several places may be misplaced');
-  assert.deepEqual(levels('我们在一起吗'), ['low'], 'one syllable in six differs');
-  assert.deepEqual(levels('你好世界我们在二起'), ['high'], 'one typo in nine syllables');
-  assert.deepEqual(levels('火星'), ['none']);
-  assert.equal(matchLevel({via: 'polyphonic', candidates: [[0, 1]], mismatches: [0], chosen: 0}), 'high', 'another reading of a polyphonic character');
+test('writes pinyin readings on request and marks a syllable aligned to a different one', () => {
+  const tracks = [track('v', 'wo men zai yi qi chang')];
+  assert.equal(after(alignLyricsToTracks('我们在一起唱', tracks, {write: 'pinyin'}), tracks, 0), '[wo][men][zai][yi][qi][chang]', 'the same pinyin needs no change');
+  const typo = alignLyricsToTracks('我们再一起唱', tracks);
+  assert.equal(typo.tokens.find(token => token.value === '再').status, 'change', '再 and 在 read alike');
+  const different = alignLyricsToTracks('我们都一起唱', tracks);
+  assert.equal(different.tokens.find(token => token.value === '都').status, 'low', 'a syllable sung differently is aligned but flagged');
+  assert.equal(alignLyricsToTracks('', tracks).tokens.length, 0);
+  assert.equal(alignLyricsToTracks('火星', tracks).changes.length, 0, 'two syllables are too few to place');
 });
