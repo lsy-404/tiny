@@ -14,3 +14,4 @@
 - main 快进 28f0771 → a1b8811 并推送 main 与 feature/vocal-score-refresh；Workers Builds 部署后 tiny.leisiyu.dev/projects/vocal-score/ 入口为 index-AX1YoPIk.js（推送后约 10 s 可见），与本地干净构建一致。
 - 线上（内置浏览器，合成 SVP）：默认 4→3 谱表、副歌并入主歌、和声完整、Saki 不并、允许重叠默认 5%、声部列表显示声库；开启跨声库与显示演唱者后 4→2，声部名“主歌（Mai）”“和声（Mai）”，谱面一处“Saki”；调校页 +130¢ 手动曲线 E4→F4，自动音高 −180¢ 仅作参考（不修正），剩余音分提示一条。无错误提示。
 - 未运行：release-check（main 工作区的 dist 含 028 未提交改动，与线上不对应，改以入口哈希一致核对）；Playwright 浏览器测试套件。
+- 用户“合并一下然后跑”：合并 028 后 OSMD 浏览器测试与 state 失败（见 findings），修正为 6f4b360；028 提交 cf7decb；pnpm run test 150/150（含 Playwright 与三份样本）；本地 dist 全部浏览器测试通过；推送 main 后线上 index-BbZdRlXI.js 与本地一致；线上 release-check 通过（47 个文件哈希、4 个项目）；state、editor、notices、score-text、continuous-preview、formats（花骨朵、完美友人）、pdf（5 种纸张 + 请不要带我走.svp，0 浏览器错误、0 外部请求）、project-navigation 均通过（ALLOW_CLOUDFLARE_ANALYTICS=1）。

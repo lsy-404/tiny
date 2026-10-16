@@ -13,3 +13,6 @@
 - [样本，临时零重叠规则] 人立方：0 个音符被搬移（原 211 个和声音符被拆散）；花骨朵：仅 Ahu~ → main 14 个，chords 保持完整；main 声库 MEDIUM5·Stardust、chords 声库 MEDIUM5·Shian。花骨朵手动曲线生效后修正 2 个音符；解析 20 ms（自动音高 1.6 万–3 万点，二分采样）。
 - [合并规则] 允许重叠 t：同时发声占来源时长 ≤ t，且因重叠留下的音符 ≤ 2t（部分重叠的乐句整句留下，超过则一条旋律会被拆在两个谱表）；候选按同时发声最少、同一声库、音区相近、位置靠上排序。默认 5% 下人立方 0 搬移、花骨朵仅 Ahu~ → main 14；花骨朵 chords 对 Ahu~ 约 5% 的陷阱因 Ahu~ 先并入 main 而不出现。
 - [交付] main 无分支保护（gh api 404 Branch not protected）；Workers Builds 从 main 构建 minigames。028 会话的未提交改动与本任务共用 App.vue、i18n.js、README.md、tasks.md -> 暂存区写入“HEAD + 本任务改动”，工作区保持原样。
+- [浏览器测试] staff-layout.browser-server.cjs 按白名单提供文件；converter.js 新增 import importers/model.js 后未在白名单 -> 页面模块加载失败、等待 PASS 超时 30 s -> 加入路由。此前干净工作树无 Playwright 而跳过该测试，未暴露。
+- [浏览器测试] state.browser 以 #merge-setting 内唯一复选框为合并开关；“允许合并不同声库”放进同一容器导致严格模式匹配 2 个 -> 移到 #merge-singers-setting。
+- [浏览器测试] pdf.browser 的样本段固定期望 573 音符 / 102 小节 / 调号 2，即 F:/OneDrive/Files/SV/请不要带我走.svp；传入其他样本会等待超时。Playwright 取 npx 缓存 9833c18b2d85bc59（1.60）。
