@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {applyHanziMatch, applyLocatedLyrics, locatePastedLyrics, matchHanziLyrics, normalizePinyin} from '../../apps/vocal-score/src/lib/lyric-alignment.js';
+import {applyHanziMatch, applyLocatedLyrics, locatePastedLyrics, matchHanziLyrics, matchLevel, normalizePinyin} from '../../apps/vocal-score/src/lib/lyric-alignment.js';
 
 const note = lyrics => ({lyrics, onset: 0, duration: 100, pitch: 60});
 
@@ -98,4 +98,26 @@ test('finds a phrase with a typo or a missing syllable as a labelled near match'
   applyLocatedLyrics(notes, missing);
   assert.deepEqual(notes.map(item => item.lyrics).slice(0, 7), ['wo', 'liao', 'jie', 'mei', 'ge', 'ren', 'de']);
   assert.equal(locatePastedLyrics('火星', notes, {write: 'hanzi'})[0].chosen, -1, 'short phrases are never matched approximately');
+});
+
+test('records where each pasted syllable was typed and how each phrase was found', () => {
+  const notes = ['ni', 'hao', 'shi', 'jie', 'wo', 'men', 'zai', 'yi', 'qi'].map(note);
+  const text = '你好，  世界 我们在一起吗';
+  const phrases = locatePastedLyrics(text, notes, {write: 'hanzi'});
+  assert.deepEqual(phrases.map(phrase => [phrase.text, phrase.start, phrase.end]), [['你好', 0, 2], ['世界', 5, 7], ['我们在一起吗', 8, 14]]);
+  assert.deepEqual(phrases[2].tokens.map(token => text.slice(token.start, token.end)).join(''), '我们在一起吗');
+  assert.deepEqual(phrases.map(phrase => phrase.via), ['reading', 'reading', 'approximate'], 'a phrase with one extra syllable is a near match');
+  assert.deepEqual(locatePastedLyrics('火星', notes).map(phrase => phrase.via), [null]);
+  assert.deepEqual(locatePastedLyrics('ni hao  shi', notes)[0].tokens.map(token => [token.start, token.end]), [[0, 2], [3, 6], [8, 11]]);
+});
+
+test('rates located phrases as exact, high or low confidence, and missing phrases as none', () => {
+  const notes = ['a', 'ni', 'hao', 'shi', 'jie', 'wo', 'men', 'zai', 'yi', 'qi', 'a'].map(note);
+  const levels = text => locatePastedLyrics(text, notes, {write: 'hanzi'}).map(matchLevel);
+  assert.deepEqual(levels('你好 世界'), ['exact', 'exact'], 'unique phrases on their usual readings');
+  assert.deepEqual(levels('啊'), ['high'], 'a short phrase found in several places may be misplaced');
+  assert.deepEqual(levels('我们在一起吗'), ['low'], 'one syllable in six differs');
+  assert.deepEqual(levels('你好世界我们在二起'), ['high'], 'one typo in nine syllables');
+  assert.deepEqual(levels('火星'), ['none']);
+  assert.equal(matchLevel({via: 'polyphonic', candidates: [[0, 1]], mismatches: [0], chosen: 0}), 'high', 'another reading of a polyphonic character');
 });
