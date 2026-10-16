@@ -11,7 +11,12 @@ const paperSelections={A:{},B:{}};
 function observe(page){
   page.on('pageerror',error=>pageErrors.push(error.message));
   page.on('request',request=>{
-    try { if(new URL(request.url()).origin!==origin)externalRequests.push(request.url()); }
+    try {
+      const url=new URL(request.url());
+      // On production, Cloudflare's edge may inject its Web Analytics beacon; the app itself makes no such request.
+      if(process.env.ALLOW_CLOUDFLARE_ANALYTICS==='1'&&((url.origin==='https://static.cloudflareinsights.com'&&url.pathname.startsWith('/beacon.min.js'))||(url.origin===origin&&url.pathname==='/cdn-cgi/rum')))return;
+      if(url.origin!==origin)externalRequests.push(request.url());
+    }
     catch { externalRequests.push(request.url()); }
   });
   return page;

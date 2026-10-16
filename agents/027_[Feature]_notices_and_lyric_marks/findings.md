@@ -6,3 +6,4 @@
 - 定位需要每个音节在粘贴文本中的位置：pastedPhrases 改为 matchAll 记录 start/end（汉字按码点长度累加），原 12 个对齐测试不变；locatePastedLyrics 记录 via（reading/polyphonic/approximate）供置信度分级。
 - 图例中的示例线必须把 mark-* 类放在画线的元素本身：text-decoration-color 不继承到子元素自己的装饰线。
 - 完美友人.acep 实测：完全匹配、近似（改一字）与谱中未找到三类同时显示，“在→改”突出、未改动音节淡显，按钮“替换 1 个音符”。
+- 线上页面会被 Cloudflare 边缘注入 Web Analytics 信标（static.cloudflareinsights.com/beacon.min.js）；state.browser 原本把它算作外部请求而失败。按 pdf.browser 的做法增加 ALLOW_CLOUDFLARE_ANALYTICS=1 放行，本地默认仍严格。
