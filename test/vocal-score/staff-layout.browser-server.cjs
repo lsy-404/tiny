@@ -11,6 +11,7 @@ const routes = new Map([
   ['/apps/vocal-score/src/lib/page-layout.js',['apps/vocal-score/src/lib/page-layout.js','text/javascript; charset=utf-8']],
   ['/apps/vocal-score/src/lib/pdf.js',['apps/vocal-score/src/lib/pdf.js','text/javascript; charset=utf-8']],
   ['/apps/vocal-score/src/lib/staff.js',['apps/vocal-score/src/lib/staff.js','text/javascript; charset=utf-8']],
+  ['/apps/vocal-score/src/lib/playback.js',['apps/vocal-score/src/lib/playback.js','text/javascript; charset=utf-8']],
   ['/vendor/opensheetmusicdisplay.min.js',['apps/vocal-score/public/vendor/opensheetmusicdisplay.min.js','text/javascript; charset=utf-8']],
 ]);
 

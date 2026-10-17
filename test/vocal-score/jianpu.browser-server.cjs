@@ -7,6 +7,7 @@ const routes = new Map([
   ['/',['test/vocal-score/jianpu.browser.html','text/html; charset=utf-8']],
   ['/apps/vocal-score/src/lib/jianpu.js',['apps/vocal-score/src/lib/jianpu.js','text/javascript; charset=utf-8']],
   ['/apps/vocal-score/src/lib/page-layout.js',['apps/vocal-score/src/lib/page-layout.js','text/javascript; charset=utf-8']],
+  ['/apps/vocal-score/src/lib/playback.js',['apps/vocal-score/src/lib/playback.js','text/javascript; charset=utf-8']],
 ]);
 
 const server=createServer((request,response)=>{
