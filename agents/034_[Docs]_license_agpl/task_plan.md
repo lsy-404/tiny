@@ -7,4 +7,4 @@
 - [x] 界面侧栏底部：织音机源代码（GitHub apps/vocal-score）· AGPL-3.0（LICENSE）· 第三方许可（vendor/THIRD-PARTY.txt），四语
 - [x] README：开头标明协议与源代码地址；“许可与源代码”一节（版权声明、AGPL-3.0-or-later、第 13 条网络服务提供源码、第三方许可兼容性、仓库内其他作品不在此范围）；根 README 说明
 - [x] 测试与本地验证
-- [ ] 合并 main、部署、线上验证
+- [x] 合并 main、部署、线上验证
