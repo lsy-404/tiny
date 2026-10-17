@@ -8,3 +8,4 @@
 - i18n 18 条（英日韩）+ 测试参数 word/snippet/reading。
 - 单元：lyric-candidates.test.js（6 项）、playback.test.js（平滑、跨小节线连续）；共 173 项（171 通过、2 跳过）。playback.browser.mjs 扩展：歌曲挂接/解除/多工程/删除/同名导入、拼音候选弹框与整声部填入 —— PASS。
 - 浏览器套件全部通过：state、editor、notices、score-text、continuous-preview、formats、pdf、storage、jianpu、render-performance、staff-layout、playback。
+- 提交 a612811 推送 main；约 60 s 上线（index-DP4oFDeA.js）。生产：release-check passed；playback、state、editor、score-text、storage、pdf 全部 PASS；旧版按工程 id 保存的音频在生产上自动挂回（迁移验证 PASS）。
