@@ -11,3 +11,5 @@
 - 截图：五线谱第 3 小节光标贯穿三声部；简谱第 74 小节；手机宽度走带栏换行；深色主题。
 - jianpu/staff-layout 浏览器夹具服务器未提供 playback.js -> 加路由后通过（jianpu PASS；staff-layout 1/1）。
 - 浏览器套件全部通过：state、editor、notices、score-text、continuous-preview、formats、pdf（五种纸张）、storage、jianpu、render-performance、playback。
+- 提交 4f5b073 推送 main；Workers Builds 约 120 s 上线（index-DOhWLuT6.js）。
+- 生产验证：release-check passed（47 个文件哈希）；playback、state、editor、score-text、pdf（五种纸张）全部 PASS。
