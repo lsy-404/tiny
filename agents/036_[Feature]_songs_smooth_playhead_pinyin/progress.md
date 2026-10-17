@@ -10,3 +10,4 @@
 - 浏览器套件全部通过：state、editor、notices、score-text、continuous-preview、formats、pdf、storage、jianpu、render-performance、staff-layout、playback。
 - 提交 a612811 推送 main；约 60 s 上线（index-DP4oFDeA.js）。生产：release-check passed；playback、state、editor、score-text、storage、pdf 全部 PASS；旧版按工程 id 保存的音频在生产上自动挂回（迁移验证 PASS）。
 - App：pinyinTargets/nextPinyin/openTextId；ScoreTextOverlay：openId 打开、其他页收起、弹框在字下方、底色；四语言 2 条；playback.browser 增加按钮逐个打开断言。单元 171 通过；playback/score-text/editor 浏览器 PASS。
+- 提交 0bd241c 推送 main，约 60 s 上线（index-d-jIRm62.js）；生产 release-check、playback、score-text 通过；线上用 在我们成为朋友之前.svp 截图：按钮“242 处拼音可补汉字”，一次点击打开“音 yue”，候选首位 乐（词语“音乐”）。
