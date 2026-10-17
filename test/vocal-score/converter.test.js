@@ -569,6 +569,12 @@ test('sums the remaining-cents notice into one line per part', () => {
 const quarterNotes = rows => ({ title: 'Style', tracks: [{ id: 'v', name: 'V', notes: rows.map(([onset, duration, pitch, lyrics = 'la']) => ({ onset: Math.round(QUARTER * onset), duration: Math.round(QUARTER * duration), pitch, lyrics })) }], meters: [{ index: 0, numerator: 4, denominator: 4 }], tempos: [{ position: 0, bpm: 120 }], warnings: [] });
 const count = (text, pattern) => (text.match(pattern) || []).length;
 
+test('ends the last bar with a final barline', () => {
+  const result = createScore(quarterNotes([[0, 1, 60], [5, 1, 62]]));
+  assert.equal((result.xml.match(/<bar-style>regular<\/bar-style>/g) || []).length, 1, 'bar 1 ends with a regular barline');
+  assert.match(result.xml, /<measure number="2">.*<barline location="right"><bar-style>light-heavy<\/bar-style><\/barline><\/measure><\/part>/);
+});
+
 test('writes melismas with an extender line, a slur or both, and closes a slur across a barline', () => {
   // "la" sung over three pitches, the last crossing into bar 2, then "li".
   const project = quarterNotes([[0, 2, 60, 'la'], [2, 1, 62, '-'], [3, 2, 64, '-'], [5, 1, 65, 'li']]);
@@ -576,12 +582,12 @@ test('writes melismas with an extender line, a slur or both, and closes a slur a
   assert.doesNotMatch(extender.xml, /<slur/);
   assert.match(extender.xml, /<text>la<\/text><extend type="start"\/>/);
   const slur = createScore(project, { melisma: 'slur' });
-  assert.equal(count(slur.xml, /<slur number="1" type="start"\/>/g), 1);
+  assert.equal(count(slur.xml, /<slur number="1" type="start" placement="above"\/>/g), 1, 'vocal slurs sit above the staff');
   assert.equal(count(slur.xml, /<slur number="1" type="stop"\/>/g), 1);
   assert.doesNotMatch(slur.xml, /<extend/, 'a slur alone draws no extender line');
   assert.match(slur.xml, /<measure number="2">.*?<tied type="stop"\/><slur number="1" type="stop"\/>/, 'the slur ends on the tied half after the barline');
   const both = createScore(project, { melisma: 'both' });
-  assert.match(both.xml, /<slur number="1" type="start"\/>.*?<extend type="start"\/>/);
+  assert.match(both.xml, /<slur number="1" type="start" placement="above"\/>.*?<extend type="start"\/>/);
   assert.throws(() => createScore(project, { melisma: 'dots' }), /melisma/);
 });
 
