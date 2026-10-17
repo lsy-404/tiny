@@ -145,6 +145,33 @@ try{
   await page.locator('#file-input').setInputFiles({name:'pinyin.svp',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(pinyinProject))});
   await page.waitForFunction(()=>document.querySelector('#document-title')?.textContent==='Pinyin',null,{timeout:60000});
   await page.waitForFunction(()=>document.querySelectorAll('.score-text-target--suggest').length===5,null,{timeout:30000});
+  // On import the song's own matches are offered at once: the harmony sings with the lead.
+  const dialog=page.locator('#self-check-dialog');
+  await page.waitForFunction(()=>document.querySelector('#self-check-dialog')?.open,null,{timeout:30000});
+  assert.match(await dialog.locator('header p').textContent(),/找到 5 处拼音.*同时唱 5 处，前后同句 0 处/u);
+  assert.equal(await dialog.locator('.self-check__row').count(),5);
+  assert.match(await dialog.locator('.self-check__group h3').textContent(),/Harmony/u);
+  assert.equal(await dialog.locator('#self-check-apply').textContent(),'全部采用（5）');
+  // Character by character: keep one as pinyin.
+  await dialog.locator('.self-check__row').nth(4).locator('.self-check__keep').click();
+  assert.equal(await dialog.locator('#self-check-apply').textContent(),'全部采用（4）');
+  await dialog.locator('#self-check-apply').click();
+  await page.waitForFunction(()=>!document.querySelector('#self-check-dialog')?.open);
+  await page.waitForFunction(()=>document.querySelectorAll('.score-text-target[aria-label="编辑 我"]').length===2&&document.querySelectorAll('.score-text-target[aria-label="编辑 chang"]').length===1,null,{timeout:30000});
+  assert.equal(await page.locator('#self-check-undo').textContent(),'已补 4 处 · 撤销');
+  await page.locator('#self-check-undo').click();
+  await page.waitForFunction(()=>document.querySelectorAll('.score-text-target[aria-label="编辑 wo"]').length===1&&document.querySelectorAll('.score-text-target--suggest').length===5,null,{timeout:30000});
+  assert.equal(await page.locator('#self-check-undo').count(),0);
+  // The lyric panel's self-check button asks again; later closes it.
+  await page.locator('.sidebar-nav-item[data-section="lyrics"]').click();
+  await page.locator('#self-check-button').click();
+  await page.waitForFunction(()=>document.querySelector('#self-check-dialog')?.open);
+  assert.equal(await dialog.locator('.self-check__row').count(),5);
+  await page.locator('#self-check-later').click();
+  await page.waitForFunction(()=>!document.querySelector('#self-check-dialog')?.open);
+  assert.equal(await page.locator('.analysis-disclaimer',{hasText:'单独的 -'}).count(),0,'the note on a lone - is gone');
+  assert.equal(await page.locator('.lyric-editor__segments > span').count(),0,'the write-as label is gone');
+  await page.locator('.sidebar-nav-item[data-section="files"]').click();
   // The button in the heading opens each pinyin lyric's candidates in turn.
   assert.equal(await page.locator('#pinyin-button').textContent(),'5 处拼音可补汉字');
   await page.locator('#pinyin-button').click();

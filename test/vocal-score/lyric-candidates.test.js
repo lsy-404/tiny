@@ -54,3 +54,29 @@ test('bar numbers follow meter changes', () => {
   const late = findLyricCandidates([part('a', 'Lead', ['也'], 11), part('b', 'Early', ['ye'], 0)], [{index: 0, numerator: 4, denominator: 4}, {index: 2, numerator: 3, denominator: 4}]);
   assert.equal(forNote(late, 'b', 0).candidates[0].source.bar, 4, 'quarter 11 is in the fourth bar after two bars of 4/4 and one of 3/4');
 });
+
+test('candidates from the song itself are marked for self-check, with where the lyric sits', () => {
+  const tracks = [
+    part('a', 'Lead', ['我', '们', '一', '起', '唱', '或', '许', '那', '天'], 0),
+    part('b', 'Harmony', ['wo', 'men', 'yi', 'qi', 'chang'], 0),
+    part('c', 'Late', ['ni', 'shuo', 'huo', 'xu', 'na', 'tian'], 12),
+  ];
+  const found = findLyricCandidates(tracks, meters);
+  const wo = forNote(found, 'b', 0);
+  assert.equal(wo.candidates[0].confident, true, 'another part at the same time');
+  assert.equal(wo.bar, 1);
+  assert.deepEqual([wo.before, wo.after], [[], ['men', 'yi']]);
+  const xu = forNote(found, 'c', 3);
+  assert.equal(xu.candidates[0].text, '许');
+  assert.equal(xu.candidates[0].confident, true, 'the same phrase elsewhere, neighbours matching');
+  assert.ok(xu.candidates[0].source.matched > 1);
+  assert.equal(xu.bar, 4);
+  assert.deepEqual([xu.before, xu.after], [['ni', 'shuo', 'huo'], ['na', 'tian']]);
+  const shuo = forNote(found, 'c', 1);
+  assert.ok(!shuo || shuo.candidates.every(item => !item.confident), 'a reading found nowhere nearby is not offered for self-check');
+  const lone = forNote(findLyricCandidates([part('a', 'Lead', ['也', '是', '你']), part('b', 'Later', ['wo', 'ye', 'shi'], 8)], meters), 'b', 1);
+  assert.equal(lone.candidates[0].confident, true, 'ye next to shi matches 也是');
+  const weak = forNote(findLyricCandidates([part('a', 'Lead', ['约', '定']), part('b', 'Later', ['sui', 'yue'], 8)], meters), 'b', 1);
+  assert.equal(weak.candidates[0].text, '约');
+  assert.equal(weak.candidates[0].confident, false, 'the same reading with nothing around it matching is only a suggestion');
+});
