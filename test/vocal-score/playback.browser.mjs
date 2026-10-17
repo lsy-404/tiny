@@ -22,7 +22,8 @@ try{
   await page.locator('#file-input').setInputFiles({name:'playback.svp',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(project))});
   await page.locator('.score-viewer__sheet[data-rendered=true]').first().waitFor({timeout:60000});
   const time=()=>page.locator('#playback-time').textContent();
-  const playhead=()=>page.locator('.playhead').evaluate(node=>({left:parseFloat(node.style.left),top:parseFloat(node.style.top),height:parseFloat(node.style.height)}));
+  // Where the playhead is drawn, in percent of its page.
+  const playhead=()=>page.locator('.playhead').evaluate(node=>{const box=node.getBoundingClientRect(),bounds=node.closest('.score-viewer__page').getBoundingClientRect(),percent=value=>Math.round(value*1e4)/100;return{left:percent((box.left+box.width/2-bounds.left)/bounds.width),top:percent((box.top-bounds.top)/bounds.height),height:percent(box.height/bounds.height)};});
   assert.equal(await page.locator('#playback-duration').textContent(),'0:06','three bars of 4/4 at 120 bpm');
   assert.equal(await page.locator('#score .playback-mark').count(),3,'one playback mark per bar on the staff');
   assert.equal(await page.locator('.playhead').count(),0,'no playhead before playback is used');
@@ -74,12 +75,13 @@ try{
   const second=await page.locator('.score-viewer__sheet .playback-mark').nth(1).boundingBox(),pageBox=await page.locator('.score-viewer__page').first().boundingBox();
   assert.ok(numbered.left>=(second.x-pageBox.x)/pageBox.width*100-0.5&&numbered.left<=(second.x+second.width-pageBox.x)/pageBox.width*100,'at two seconds the numbered playhead is in the second bar');
 
-  // The exported audio plays along; it is kept for the document, with its offset.
+  // The exported audio plays along: it becomes a song kept in this browser, attached to the project with an offset.
   await page.locator('.playback-bar__file').setInputFiles({name:'render.wav',mimeType:'audio/wav',buffer:wav(7)});
   await page.locator('#audio-name').waitFor();
   assert.equal(await page.locator('#audio-name').textContent(),'render.wav');
   assert.equal(await page.locator('#piano-toggle').getAttribute('aria-pressed'),'false','the recording replaces the piano');
   await page.waitForFunction(()=>document.querySelector('#playback-duration')?.textContent==='0:07',null,{timeout:10000});
+  assert.match(await page.locator('#song-list .song-row').textContent(),/render\.wav.*已挂到 1 个工程/u,'the song is listed with the projects it serves');
   await page.locator('#audio-offset').fill('1');await page.locator('#audio-offset').press('Enter');
   await page.waitForFunction(()=>document.querySelector('#playback-duration')?.textContent==='0:08');
   await page.locator('#play-button').click();
@@ -89,8 +91,8 @@ try{
   await page.waitForFunction(()=>document.querySelector('#storage-status')?.textContent?.includes('已保存在此浏览器'),null,{timeout:15000});
   await page.reload();
   await page.locator('#audio-name').waitFor({timeout:60000});
-  assert.equal(await page.locator('#audio-name').textContent(),'render.wav','the audio is kept in this browser');
-  assert.equal(await page.locator('#audio-offset').inputValue(),'1','with its offset');
+  assert.equal(await page.locator('#audio-name').textContent(),'render.wav','the song is kept in this browser');
+  assert.equal(await page.locator('#audio-offset').inputValue(),'1',"with the project's offset");
   assert.equal(await page.locator('#piano-toggle').getAttribute('aria-pressed'),'false');
   await page.locator('#piano-toggle').click();
   assert.equal(await page.locator('#piano-toggle').getAttribute('aria-pressed'),'true','the piano can join the recording');
@@ -104,16 +106,60 @@ try{
   const svg=await (await download).createReadStream().then(stream=>new Promise(resolve=>{let text='';stream.on('data',chunk=>{text+=chunk;});stream.on('end',()=>resolve(text));}));
   assert.ok(svg.includes('<svg')&&!svg.includes('playback-mark'),'exports leave the marks out');
 
-  await page.locator('#audio-remove').click();
+  // Detaching keeps the song; it can be attached again from the play bar.
+  await page.locator('#audio-detach').click();
   await page.locator('#audio-open').waitFor();
+  assert.equal(await page.locator('#piano-toggle').getAttribute('aria-pressed'),'true','the piano is back');
+  assert.match(await page.locator('#song-list .song-row').textContent(),/未挂接/u);
+  await page.locator('#song-attach').selectOption({label:'render.wav'});
+  await page.locator('#audio-name').waitFor();
+  assert.equal(await page.locator('#audio-offset').inputValue(),'1','the project keeps its offset');
+
+  // One song serves several projects.
+  await page.locator('#file-input').setInputFiles({name:'second.svp',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({...project,projectName:'Second'}))});
+  await page.waitForFunction(()=>document.querySelector('#document-title')?.textContent==='Second',null,{timeout:60000});
+  await page.locator('#audio-open').waitFor();
+  await page.locator('#song-list .song-row .file-item').click();
+  await page.locator('#audio-name').waitFor();
+  assert.match(await page.locator('#song-list .song-row').textContent(),/已挂到 2 个工程/u);
+  assert.equal(await page.locator('#audio-offset').inputValue(),'0','each project has its own offset');
+
+  // Deleting the song detaches it everywhere; an audio file dropped in goes to the project of the same name.
+  await page.locator('#song-list .file-remove').click();
+  await page.locator('#audio-open').waitFor();
+  assert.equal(await page.locator('#song-section').isVisible(),false);
+  await page.locator('#file-input').setInputFiles({name:'second.wav',mimeType:'audio/wav',buffer:wav(3)});
+  await page.locator('#audio-name').waitFor();
+  assert.equal(await page.locator('#audio-name').textContent(),'second.wav','imported audio attaches to the project of the same name');
+  await page.waitForFunction(()=>document.querySelector('#storage-status')?.textContent?.includes('已保存在此浏览器'),null,{timeout:15000});
   await page.reload();
-  await page.locator('#audio-open').waitFor({timeout:60000});
-  assert.equal(await page.locator('#audio-name').count(),0,'removed audio stays removed');
+  await page.locator('#song-list .song-row').first().waitFor({timeout:60000});
+  assert.equal(await page.locator('#song-list .song-row').count(),1,'only the new song remains after reload');
+  assert.match(await page.locator('#song-list .song-row').textContent(),/second\.wav.*已挂到 1 个工程/u);
+
+  // Lyrics typed as pinyin: the song supplies characters in a popup.
+  const pinyinProject={version:153,projectName:'Pinyin',time:{tempo:[{position:0,bpm:120}],meter:[{index:0,numerator:4,denominator:4}]},tracks:[
+    {name:'Lead',mainGroup:{uuid:'lead',notes:['我','们','一','起','唱','ge'].map((lyrics,index)=>({onset:q*index,duration:q,pitch:60+index,lyrics}))},groups:[]},
+    {name:'Harmony',mainGroup:{uuid:'harmony',notes:['wo','men','yi','qi','chang','ge'].map((lyrics,index)=>({onset:q*index,duration:q,pitch:55+index,lyrics}))},groups:[]}
+  ]};
+  await page.locator('#file-input').setInputFiles({name:'pinyin.svp',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(pinyinProject))});
+  await page.waitForFunction(()=>document.querySelector('#document-title')?.textContent==='Pinyin',null,{timeout:60000});
+  await page.waitForFunction(()=>document.querySelectorAll('.score-text-target--suggest').length===5,null,{timeout:30000});
+  await page.locator('.score-text-target[aria-label="编辑 ge"]').first().click();
+  await page.locator('.score-text-homophones').waitFor();
+  assert.match(await page.locator('.score-text-together').textContent(),/ge（1 处）/u,'the harmony sings ge at the same time');
+  await page.locator('.score-text-homophone',{hasText:'歌'}).click();
+  await page.waitForFunction(()=>document.querySelectorAll('.score-text-target[aria-label="编辑 歌"]').length===2,null,{timeout:30000});
+  await page.locator('.score-text-target[aria-label="编辑 wo"]').click();
+  assert.match(await page.locator('.score-text-candidate').first().textContent(),/我.*Lead 同时唱/u);
+  await page.locator('.score-text-fill').click();
+  await page.waitForFunction(()=>!document.querySelector('.score-text-target[aria-label="编辑 wo"]')&&document.querySelectorAll('.score-text-target[aria-label="编辑 我"]').length===2,null,{timeout:30000});
+  assert.equal(await page.locator('.score-text-target--suggest').count(),0,'every pinyin lyric took its character');
 
   // A phone keeps the transport on the screen.
   await page.setViewportSize({width:390,height:844});await page.waitForTimeout(300);
   const bar390=await page.locator('.playback-bar').boundingBox();
   assert.ok(bar390.x>=0&&bar390.x+bar390.width<=391&&bar390.y+bar390.height<=845,'the transport fits a phone screen');
   assert.deepEqual(errors,[]);
-  console.log('PASS: piano playback with a moving playhead, pause, click to seek, space key, end of score, numbered notation, play-along audio kept with its offset, exports without marks, and the phone layout.');
+  console.log('PASS: piano playback with a smoothly moving playhead, pause, click to seek, space key, end of score, numbered notation, songs kept apart from projects (attach, detach, several projects with their own offsets, delete, import by name), exports without marks, pinyin candidates from other parts and homophones, and the phone layout.');
 }finally{await browser.close();}

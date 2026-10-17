@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {firstNoteFrom, formatTime, playbackNotes, playheadAt, tempoMap, tickAtPoint} from '../../apps/vocal-score/src/lib/playback.js';
+import {firstNoteFrom, formatTime, playbackNotes, playbackRows, playheadAt, tempoMap, tickAtPoint} from '../../apps/vocal-score/src/lib/playback.js';
 import {PIANO_SAMPLE_RATE, pianoToneSeconds, renderPianoTone} from '../../apps/vocal-score/src/lib/piano.js';
 import {createScore, QUARTER} from '../../apps/vocal-score/src/lib/converter.js';
 
@@ -44,16 +44,30 @@ const marks = [
   {pageNumber: 2, start: 128, end: 192, x: 0.1, y: 0.1, width: 0.8, height: 0.1, points: [[128, 0], [192, 1]]},
 ];
 
-test('the playhead moves through each bar from onset to onset', () => {
-  const at = tick => playheadAt(marks, tick);
+test('the playhead passes each note on time and runs on across barlines', () => {
+  const rows = playbackRows(marks);
+  assert.equal(rows.length, 2, 'the two bars of page 1 share a row');
+  const at = tick => playheadAt(rows, tick);
   assert.ok(Math.abs(at(0).x - 0.14) < 1e-9, 'on the first note');
-  assert.ok(Math.abs(at(16).x - (0.1 + 0.3 * 0.4)) < 1e-9, 'halfway to the second onset');
-  assert.ok(Math.abs(at(32).x - 0.3) < 1e-9);
-  assert.equal(at(64).pageNumber, 1);
-  assert.ok(Math.abs(at(64).x - 0.58) < 1e-9, 'the next bar starts on its first note');
+  assert.ok(Math.abs(at(32).x - 0.3) < 1e-9, 'on the second onset');
+  assert.ok(Math.abs(at(64).x - 0.58) < 1e-9, "on the next bar's first note when it sounds");
   assert.equal(at(150).pageNumber, 2);
   assert.ok(Math.abs(at(500).x - 0.9) < 1e-9, 'past the end it stays on the last barline');
   assert.equal(playheadAt([], 0), null);
+});
+
+test('the playhead moves smoothly: never back, no jump at a barline, speed changing gradually', () => {
+  const rows = playbackRows(marks);
+  const heads = Array.from({length: 1921}, (_, index) => playheadAt(rows, index / 10));
+  for (let index = 1; index < heads.length; index += 1) {
+    if (heads[index].pageNumber !== heads[index - 1].pageNumber || heads[index].y !== heads[index - 1].y) continue;
+    assert.ok(heads[index].x >= heads[index - 1].x - 1e-12, `no step back within a row at ${index / 10}`);
+  }
+  assert.ok(Math.abs(playheadAt(rows, 63.999).x - playheadAt(rows, 64).x) < 1e-4, 'continuous through the barline');
+  // Speed just before and after an onset is about the same: no corner where the note spacing changes.
+  const speed = tick => (playheadAt(rows, tick + 0.01).x - playheadAt(rows, tick - 0.01).x) / 0.02;
+  assert.ok(Math.abs(speed(31.9) - speed(32.1)) < speed(32) * 0.05, 'no sudden change of speed at a note');
+  assert.ok(playheadAt(rows, 16).x > 0.14 && playheadAt(rows, 16).x < 0.3);
 });
 
 test('a click on the score finds the time under it', () => {
