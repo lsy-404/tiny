@@ -4,6 +4,8 @@ Tiny Projects 是展示小工具、游戏与互动作品的静态门户。门户
 
 在线访问：[tiny.leisiyu.dev](https://tiny.leisiyu.dev/)。
 
+织音机（`apps/vocal-score`）以 [AGPL-3.0](apps/vocal-score/LICENSE) 开源；CASSIE 等其他作品保留各自的许可与署名。
+
 ## 开发
 
 ```bash
