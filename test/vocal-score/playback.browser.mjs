@@ -145,6 +145,14 @@ try{
   await page.locator('#file-input').setInputFiles({name:'pinyin.svp',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(pinyinProject))});
   await page.waitForFunction(()=>document.querySelector('#document-title')?.textContent==='Pinyin',null,{timeout:60000});
   await page.waitForFunction(()=>document.querySelectorAll('.score-text-target--suggest').length===5,null,{timeout:30000});
+  // The button in the heading opens each pinyin lyric's candidates in turn.
+  assert.equal(await page.locator('#pinyin-button').textContent(),'5 处拼音可补汉字');
+  await page.locator('#pinyin-button').click();
+  await page.locator('.score-text-candidates').waitFor();
+  assert.equal(await page.locator('.score-text-form input').first().inputValue(),'wo','the first pinyin lyric in reading order opens');
+  await page.locator('#pinyin-button').click();
+  await page.waitForFunction(()=>document.querySelector('.score-text-form input')?.value==='men');
+  await page.keyboard.press('Escape');
   await page.locator('.score-text-target[aria-label="编辑 ge"]').first().click();
   await page.locator('.score-text-homophones').waitFor();
   assert.match(await page.locator('.score-text-together').textContent(),/ge（1 处）/u,'the harmony sings ge at the same time');
