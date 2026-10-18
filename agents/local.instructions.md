@@ -9,4 +9,4 @@ applyTo: '**'
 - 协作分支本地合并 main；按实时保护状态执行 Git 交付。
 - 仓库未要求 PR 时不开 PR：完成后直接合并进 main 并推送，立即部署（Workers Builds minigames），不再等待确认。
 - Tiny 不保存作品源码：作品以固定提交子模块接入；首页按 released 倒序，署名写人名与分工，不写分类名称。
-- 作品仓库中的 Tiny 专属内容（退出到主菜单、标题后缀）按路径只在 /games/ 下显示。
+- 返回主菜单统一由 tiny.env 的 HOME_URL 决定：构建写入 <meta name="home-url">，作品读取它，未设置则不显示返回入口（游戏同时去掉 Tiny 标题后缀）。

@@ -15,7 +15,7 @@
 - games/cassandri-legend：子模块 lsy-404/cassandri-legend（与槃清合作）
 - games/ten-light-years：子模块 lsy-404/10lightyears，发布其 web/（与 StarryMiko2233 合作）
 - scripts/build-submodules.mjs：初始化全部子模块，构建 CASSIE 与织音机到 projects/
-- scripts/build.mjs：按清单复制作品到 dist/，排除仓库文件
+- scripts/build.mjs：按清单复制作品到 dist/，排除仓库文件；把 tiny.env 的 HOME_URL 写入每个作品页面 <meta name="home-url">（各作品据此显示返回入口，未设置则不显示）
 - test：门户与构建测试、test/server.mjs 预览、release-check 线上核对；作品测试随作品仓库
 - dist：生产资源
 

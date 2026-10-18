@@ -13,6 +13,8 @@ const expectedCredits = new Map([
   ['ten-light-years', '美术、设计、编码：武乙凌薇 · 数据处理：StarryMiko2233']
 ]);
 const repositoryOnly = ['.git', '.gitattributes', '.gitignore', 'node_modules', 'package.json', 'pnpm-lock.yaml', 'reference', 'test'];
+const homeUrl = (await readFile(join(root, 'tiny.env'), 'utf8')).match(/^HOME_URL=(.+)$/m)?.[1].trim();
+if (!homeUrl) throw new Error('tiny.env must define HOME_URL.');
 
 async function mustExist(path) {
   await access(path);
@@ -39,6 +41,9 @@ for (const project of catalog) {
     if (await readFile(sourceReadme, 'utf8') !== await readFile(join(output, project.path, 'README.md'), 'utf8')) {
       throw new Error(`The ${project.slug} README was not preserved in the build output.`);
     }
+  }
+  if (!(await readFile(entry, 'utf8')).includes(`<meta name="home-url" content="${homeUrl}">\n</head>`)) {
+    throw new Error(`${project.slug} must carry the HOME_URL from tiny.env as its home-url meta.`);
   }
   for (const name of repositoryOnly) {
     if (await access(join(output, project.path, name)).then(() => true, () => false)) {
