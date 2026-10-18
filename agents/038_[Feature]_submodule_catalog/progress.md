@@ -27,3 +27,5 @@
 - 签名：`ssh-add -l` 显示 agent 有 "Github"（SHA256:DcAGGG…）；以 `-c user.signingkey="key::…"` 签名探针提交成功（1Password 沿用已有授权，未弹窗），verify-commit 为同一把密钥。
 - 补签：scratchpad/resign.sh 用 `git commit-tree -S` 按原 tree/父提交映射/作者/提交者/日期/消息重建提交（不重做合并）。10lightyears cd3b2e8..HEAD → a20ee99；vocal-score 全部 37 → b6f2c40；cassandri-legend 9e08844..HEAD（86）→ d30a532。逐提交元数据与父提交形状完全一致，重建提交全部 G；`--force-with-lease` 推送，GitHub verified=true（vocal-score 37/37、cassandri 前 100 个全部）。10lightyears 中 d0e6524 为 GitHub web-flow PGP 签名的 PR 合并，未改动。
 - Tiny 子模块改指 b6f2c40、d30a532、a20ee99（tree 与补签前相同）；build 5 项 1105 文件、pnpm test 退出 0、导航浏览器测试通过。
+- Tiny e6b47f4（已签名）。main 工作区有旧的仓库内文件，无法 checkout main → `git fetch . feature/vocal-score-refresh:main` 快进本地 main，`git push origin feature/vocal-score-refresh:main feature/vocal-score-refresh`。
+- Workers Builds（minigames）build 2e496a71… success。生产核对：release-check passed（50 个文件哈希、5 个规范路由、5 个项目）；导航浏览器测试在 tiny.leisiyu.dev 1280/390 通过；package.json、test/、reference/、.gitattributes、.git、web/index.html 均 404；卡桑德里、十光年、甜品屋在 /games/ 下显示退出链接与 Tiny 标题，无页面错误。

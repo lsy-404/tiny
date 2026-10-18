@@ -21,4 +21,4 @@
 - [x] projects.json：发布日期、分类、完整署名；首页按日期倒序（orderProjects，编号按发布先后）
 - [x] README、project.md、tasks.md
 - [x] 构建、测试、浏览器预览
-- [ ] 合并进 main、推送部署、生产验证
+- [x] 合并进 main、推送部署、生产验证
