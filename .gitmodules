@@ -1,3 +1,15 @@
 [submodule "apps/cassie"]
 	path = apps/cassie
 	url = https://github.com/lsy-404/CASSIE.git
+[submodule "apps/vocal-score"]
+	path = apps/vocal-score
+	url = https://github.com/lsy-404/vocal-score.git
+[submodule "games/honeypot-dessert"]
+	path = games/honeypot-dessert
+	url = https://github.com/lsy-404/honeypot-dessert.git
+[submodule "games/cassandri-legend"]
+	path = games/cassandri-legend
+	url = https://github.com/lsy-404/cassandri-legend.git
+[submodule "games/ten-light-years"]
+	path = games/ten-light-years
+	url = https://github.com/lsy-404/10lightyears.git

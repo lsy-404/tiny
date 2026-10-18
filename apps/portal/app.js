@@ -1,9 +1,18 @@
 const grid = document.querySelector('#project-grid');
 const count = document.querySelector('#collection-count');
 
-function createCard(project, index) {
+// Display order of the collection, newest first by `released` (YYYY-MM-DD).
+// Returns [{ project, number }]; `number` is the figure shown in the card's kicker.
+function orderProjects(projects) {
+  const newestFirst = [...projects].sort((a, b) => b.released.localeCompare(a.released));
+  // Numbered by age, so a project keeps its number when newer ones arrive; same-day entries keep catalog order.
+  return newestFirst.map((project, index) => ({ project, number: newestFirst.length - index }));
+}
+
+function createCard(project, index, number) {
   const article = document.createElement('article');
   article.className = `project-card project-card-${index + 1}`;
+  article.dataset.category = project.category;
 
   if (project.cover) {
     article.classList.add('has-cover');
@@ -18,7 +27,7 @@ function createCard(project, index) {
 
   const kicker = document.createElement('p');
   kicker.className = 'card-kicker';
-  kicker.textContent = [String(index + 1).padStart(2, '0'), project.eyebrow].filter(Boolean).join(' · ');
+  kicker.textContent = [String(number).padStart(2, '0'), project.eyebrow].filter(Boolean).join(' · ');
 
   const title = document.createElement('h3');
   title.textContent = project.title;
@@ -53,7 +62,7 @@ async function renderCollection() {
     if (!response.ok) throw new Error('Could not load collection');
 
     const projects = await response.json();
-    projects.forEach((project, index) => grid.append(createCard(project, index)));
+    orderProjects(projects).forEach(({ project, number }, index) => grid.append(createCard(project, index, number)));
     count.textContent = `${String(projects.length).padStart(2, '0')} 个项目`;
   } catch {
     count.textContent = '目录暂不可用';

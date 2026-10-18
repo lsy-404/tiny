@@ -4,8 +4,8 @@ import { fileURLToPath } from 'node:url';
 import { join, resolve } from 'node:path';
 
 const root = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
-const sourceEntry = join(root, 'games', 'ten-light-years', 'index.html');
-const sourcePreview = join(root, 'games', 'ten-light-years', 'assets', 'preview.png');
+const sourceEntry = join(root, 'games', 'ten-light-years', 'web', 'index.html');
+const sourcePreview = join(root, 'games', 'ten-light-years', 'web', 'assets', 'preview.png');
 const outputEntry = join(root, 'dist', 'games', 'ten-light-years', 'index.html');
 const outputPreview = join(root, 'dist', 'games', 'ten-light-years', 'assets', 'preview.png');
 

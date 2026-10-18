@@ -8,23 +8,9 @@
     "node": ">=22.13"
   },
   "scripts": {
-    "build": "node scripts/build-cassie.mjs && vite build apps/vocal-score && node scripts/build.mjs",
-    "test": "node test/legend-runtime-assets.test.mjs && node test/build-output.test.mjs && node test/worker-config.test.mjs && node test/cassandri-v7-compat.test.mjs && node test/save-import-export.test.mjs && node test/loot-auto-select.test.mjs && node test/legend-settings-menu-actions.test.mjs && node test/legend-v8-equipment.test.mjs && node test/legend-v8-balance.test.mjs && node test/legend-prestart-difficulty.test.mjs && node test/legend-v8-combat.test.mjs && node test/legend-theft-return.test.mjs && node test/legend-v8-resonance-gold.test.mjs && node test/legend-v8-loot-three-weight.test.mjs && node test/legend-v8-purchase-slot.test.mjs && node test/legend-v8-pixel-units.test.mjs && node test/legend-v8-enemy-avatars.test.mjs && node test/legend-v8-special-equipment.test.mjs && node test/legend-difficulty-shield-tags.test.mjs && node test/legend-manual-burst.test.mjs && node test/checkbox-animation.test.mjs && node test/portal-logo.test.mjs && node test/legend-brand-assets.test.mjs && node test/legend-boat-icon.test.mjs && node test/legend-western-fantasy-cover.test.mjs && node test/legend-menu-cover.test.mjs && node test/portal-game-cover.test.mjs && node test/ten-light-years-preview.test.mjs && node --test test/vocal-score/*.test.js test/vocal-score/importers/*.test.js",
+    "build": "node scripts/build-submodules.mjs && node scripts/build.mjs",
+    "test": "node test/build-output.test.mjs && node test/worker-config.test.mjs && node test/portal-logo.test.mjs && node test/portal-game-cover.test.mjs && node test/ten-light-years-preview.test.mjs && node test/portal-catalog.test.mjs && pnpm --dir games/cassandri-legend test && pnpm --dir apps/vocal-score test",
     "check": "pnpm run build && pnpm run test",
     "deploy": "pnpm run build && pnpm dlx wrangler deploy"
-  },
-  "dependencies": {
-    "fflate": "0.8.3",
-    "fzstd": "0.1.1",
-    "jspdf": "4.2.1",
-    "pinyin-pro": "3.29.5",
-    "vue": "3.5.44",
-    "vue-i18n": "11.4.14",
-    "yaml": "2.9.1"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-vue": "6.0.10",
-    "@xmldom/xmldom": "0.9.12",
-    "vite": "8.3.4"
   }
 }

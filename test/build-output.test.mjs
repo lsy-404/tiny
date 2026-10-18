@@ -6,9 +6,13 @@ const root = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
 const output = join(root, 'dist');
 const catalog = JSON.parse(await readFile(join(root, 'apps', 'portal', 'projects.json'), 'utf8'));
 const expectedCredits = new Map([
+  ['honeypot-dessert', '作者：槃清'],
+  ['vocal-score', '委托：奥莉安多 · 设计、编码：武乙凌薇 · 开源代码 AGPL-3.0'],
+  ['cassie', '设计、编码：武乙凌薇 · 开源代码 AGPL-3.0 · 音频改编自 SCP: Secret Laboratory（Northwood Studios，CC BY-SA 3.0）'],
   ['cassandri-legend', '主创：槃清 · 编码：武乙凌薇'],
   ['ten-light-years', '美术、设计、编码：武乙凌薇 · 数据处理：StarryMiko2233']
 ]);
+const repositoryOnly = ['.git', '.gitattributes', '.gitignore', 'node_modules', 'package.json', 'pnpm-lock.yaml', 'reference', 'test'];
 
 async function mustExist(path) {
   await access(path);
@@ -27,17 +31,22 @@ for (const project of catalog) {
   await mustExist(entry);
   if (!(await stat(entry)).isFile()) throw new Error(`Expected a file: ${entry}`);
   if (!project.credit) throw new Error(`Catalog entry ${project.slug} is missing its creator credit.`);
-  if (expectedCredits.has(project.slug)) {
-    if (project.credit !== expectedCredits.get(project.slug)) {
-      throw new Error(`Catalog entry ${project.slug} has an unexpected creator credit.`);
-    }
-    const sourceReadme = join(root, project.path, 'README.md');
-    const outputReadme = join(output, project.path, 'README.md');
-    if (await readFile(sourceReadme, 'utf8') !== await readFile(outputReadme, 'utf8')) {
+  if (project.credit !== expectedCredits.get(project.slug)) {
+    throw new Error(`Catalog entry ${project.slug} has an unexpected creator credit.`);
+  }
+  const sourceReadme = join(root, project.source ?? project.path, 'README.md');
+  if (project.path.startsWith('games/') && await access(sourceReadme).then(() => true, () => false)) {
+    if (await readFile(sourceReadme, 'utf8') !== await readFile(join(output, project.path, 'README.md'), 'utf8')) {
       throw new Error(`The ${project.slug} README was not preserved in the build output.`);
     }
   }
+  for (const name of repositoryOnly) {
+    if (await access(join(output, project.path, name)).then(() => true, () => false)) {
+      throw new Error(`Repository file ${name} from ${project.slug} must not be published.`);
+    }
+  }
 }
+if (expectedCredits.size !== catalog.length) throw new Error('Every catalog entry needs an expected credit in this test.');
 
 const cassieEntry = catalog.find((project) => project.slug === 'cassie');
 if (!cassieEntry || cassieEntry.path !== 'projects/cassie') {
@@ -123,6 +132,15 @@ if (!cassandri.includes('id="btnExitToPortal"') || !cassandri.includes('href="..
 if (!tenLightYears.includes('id="exit-game"') || !tenLightYears.includes('href="../../"') || !tenLightYears.includes('返回 Tiny Projects')) {
   throw new Error('Ten Light Years is missing its settings-menu exit control.');
 }
+if (!cassandriHtml.includes('href="./styles.css"') || !cassandriHtml.includes('src="./game.js"')) {
+  throw new Error('Built Cassandri HTML has invalid asset references.');
+}
+const honeypot = await readFile(join(output, 'games', 'honeypot-dessert', 'index.html'), 'utf8');
+await mustExist(join(output, 'games', 'honeypot-dessert', 'icon.svg'));
+if (!honeypot.includes('<title>蜜罐甜品屋 | Tiny Projects</title>') || !honeypot.includes('id="btnExit" href="../../"') || !honeypot.includes('返回 Tiny Projects')) {
+  throw new Error('The Honeypot Dessert House is missing its title or exit control.');
+}
+if (/cheat|修改器/i.test(honeypot)) throw new Error('The hosted Honeypot Dessert House must not ship the test cheat tool.');
 const cassandriMenu = [
   cassandri.indexOf('id="btnContinue"'),
   cassandri.indexOf('id="btnNewGame"'),

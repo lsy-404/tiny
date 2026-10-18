@@ -174,7 +174,10 @@ h1 {
   align-items: center;
   min-height: 44px;
   margin-block: -.5rem;
+  color: var(--ink);
   font-weight: 700;
+  /* Keeps the link legible where it sits over a light cover image. */
+  text-shadow: 0 0 .35rem var(--canvas), 0 0 .8rem var(--canvas);
 }
 .card-footer a::after { margin-left: .4rem; color: var(--accent); content: "→"; }
 

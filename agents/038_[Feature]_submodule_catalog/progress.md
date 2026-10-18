@@ -1,0 +1,29 @@
+# 038 操作日志
+
+- 建立任务目录与计划。
+- 新建 F:/Development/lsy-404@honeypot-dessert：原文件复制为 index.html；标题“蜜罐甜品屋 | Tiny Projects”、icon.svg、顶栏“退出游戏”（../../，有进度时 confirm）；删除测试修改器按钮、F1、弹窗、样式与代码（含秘钥）。README 署名槃清与托管改动说明、无开源许可。
+- 无头 Chrome（CASSIE 的 playwright 1.63）验证：标题/图标正确、修改器元素 0、空闲时直接返回、营业中弹确认且取消后停留、无页面错误。用游戏自身状态与渲染函数布置第 6 天场景截取 assets/preview.png（1360×1360）。
+- `gh repo create lsy-404/honeypot-dessert --public` 并推送 9823e9d。
+- `git subtree split --prefix=apps/vocal-score`（35 个提交）→ F:/Development/lsy-404@vocal-score；复制 test/vocal-score 为 test/（release-check 留在 Tiny），重写路径（../../apps/vocal-score → ../、服务器根、默认预览地址 127.0.0.1:4190/）；package.json 与 Tiny 根依赖一致并复用 pnpm-lock；vite 默认 dist/；README 与 App.vue 源码链接改为 github.com/lsy-404/vocal-score，加入委托与致谢。
+- 独立仓库验证：单元 174/172 通过 2 跳过（与 Tiny 相同）；jianpu、storage、notices、editor 浏览器测试 PASS；构建成功。
+- 发布 lsy-404/vocal-score（9b834cb）。全局 gitignore 的 `/test/` 与 `.gitignore` 规则漏掉了测试，追加提交强制加入（51 个测试文件）。
+- `git subtree split --prefix=games/cassandri-legend`（84 个提交）→ 克隆 F:/Development/lsy-404@cassandri-legend，`pull --allow-unrelated-histories -X theirs`；逐文件 cmp 与 Tiny 一致，保留 reference/original-6.5.html。
+- 合并提交被 SSH 签名阻断：1Password 在 19:36:10 重写 ~/.ssh/1Password，git 配置的 SHA256_DcAGGG… 公钥不在其中（之前三个提交均已签名）。不绕过签名，等待用户解锁 1Password。
+- 工作区：移入 23 个游戏测试（路径改为仓库根）、legend-runtime-assets 去掉 Tiny 构建段、删除过时的 version-6.5-ui 测试；package.json `node --test test/*.test.mjs` 29/29 通过。game.js/styles.css 加路径规则（非 /games/ 下加 html.standalone、去标题后缀、隐藏两个退出链接）与 standalone-exit 测试；Chrome 实测 /games/cassandri-legend/ 显示、/cassandri-legend/ 隐藏，均无页面错误。README 加署名、两个在线地址、6.5 归档说明。
+- 10lightyears：web/ 同步 Tiny 最新 index.html、main.js、vendor（仅空白修正）、assets/preview.png、data/*.bin；main.js 顶部与 index.html 样式加路径规则；Chrome 实测 /games/ten-light-years/ 显示退出、/ 隐藏并去标题后缀；README 改为 .bin 随仓库分发并加署名与两个在线地址。提交待签名恢复。
+- Tiny：`git rm` apps/vocal-score、games/cassandri-legend、games/ten-light-years、test/vocal-score 与 23 个游戏测试；release-check 移到 test/；`git submodule add` vocal-score、honeypot-dessert、cassandri-legend、10lightyears（后两者暂指旧提交）。
+- scripts/build-cassie.mjs → build-submodules.mjs（submodule update --init 全部，CASSIE 与织音机 install+build --outDir）；build.mjs 支持 source、校验 category/released、复制时排除仓库文件。根 package.json 去掉全部依赖，pnpm-lock 只剩空 importer。
+- projects.json：五项按新到旧，category/released/完整署名，十光年 source=web，卡桑德里 meta 6.5→8.0。
+- 测试：build-output（五项署名、仓库文件不得发布、甜品屋退出与无修改器、卡桑德里资源引用）、portal-catalog（新）、portal-game-cover、ten-light-years-preview（web/）、release-check（五个路由）、project-navigation（五卡新到旧、甜品屋往返）；test/server.mjs 与 launch.json “tiny”。
+- 把准备好的卡桑德里与十光年工作区临时复制进子模块后：build 5 项 1105 文件、dist 无仓库文件；pnpm test 全部通过（卡桑德里 29/29、织音机 172+2 跳过）；project-navigation 在 1280/390 宽度通过。
+- 浅色封面上“开始游玩”看不清 → .card-footer a 改用 --ink 并加 --canvas 光晕，复查清晰。
+- README、project.md、local.instructions 更新。
+- 用户：“先不签名，我现在签不了，我晚点force push补签”。之后提出 RDP 批准签名，但 op-ssh-sign 在弹出批准前就因公钥文件 SHA256_DcAGGG….pub 缺失而失败（~/.ssh/1Password 仍只有 4 个其他公钥），批准无从发生 → 按第一条指示用 `-c commit.gpgsign=false` 继续。
+- cassandri-legend：0eadc35（合并 Tiny 历史）、c6a5203（测试与路径规则）未签名，已推送 main。
+- 10lightyears：f7e2dae（web 同步、.bin、README）未签名，已推送 main。voidcarve 站暂未重新部署（无 exit-game、main.js 无 standalone）。
+- Tiny 子模块指针更新到 c6a5203、f7e2dae（working tree 干净）；pnpm run build 5 项 1105 文件，pnpm test 退出 0（卡桑德里 29/29，织音机 172 通过 2 跳过，门户 6 项）。
+- 待办：用户实现 apps/portal/app.js orderProjects（TODO(human)）→ 浏览器导航测试 → 提交 Tiny（test/ 内新文件需 -f）→ 合并 main、推送、生产验证。之后用户自行补签并 force push：cassandri-legend 2 个、10lightyears 1 个提交（vocal-score 与 honeypot-dessert 的提交已签名）。
+- 用户：“你直接写啊，然后尝试一下签名”。orderProjects：按 released 新到旧，编号按发布先后（最早 01）；导航测试加编号断言（05→01），通过；首页无控制台错误。
+- 签名：`ssh-add -l` 显示 agent 有 "Github"（SHA256:DcAGGG…）；以 `-c user.signingkey="key::…"` 签名探针提交成功（1Password 沿用已有授权，未弹窗），verify-commit 为同一把密钥。
+- 补签：scratchpad/resign.sh 用 `git commit-tree -S` 按原 tree/父提交映射/作者/提交者/日期/消息重建提交（不重做合并）。10lightyears cd3b2e8..HEAD → a20ee99；vocal-score 全部 37 → b6f2c40；cassandri-legend 9e08844..HEAD（86）→ d30a532。逐提交元数据与父提交形状完全一致，重建提交全部 G；`--force-with-lease` 推送，GitHub verified=true（vocal-score 37/37、cassandri 前 100 个全部）。10lightyears 中 d0e6524 为 GitHub web-flow PGP 签名的 PR 合并，未改动。
+- Tiny 子模块改指 b6f2c40、d30a532、a20ee99（tree 与补签前相同）；build 5 项 1105 文件、pnpm test 退出 0、导航浏览器测试通过。
