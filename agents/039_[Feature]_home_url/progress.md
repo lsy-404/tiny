@@ -7,3 +7,4 @@
 - CASSIE 8d08f09：src/home-url.ts；TitleBar 与 TerminalEntry 同样处理；README 说明；vitest 226/226，vue-tsc 通过；terminal.spec 新增有/无 meta 用例（page.route 改写 HTML），desktop 86 通过；mobile-webkit 8 个因本机未安装 WebKit（Executable doesn't exist）在启动浏览器时失败，与改动无关，未下载安装。
 - 浏览器核对（scratchpad/home-url-check.mjs，/with/ 注入 meta、/without/ 不注入）：三个游戏与织音机有 meta 时显示并指向 /menu/，无 meta 时隐藏且游戏标题去后缀，均无页面错误。
 - Tiny 指针：cassie 8d08f09、vocal-score 391c704、cassandri 204dbe9、ten-light-years 1789247、honeypot 66b3020；build 通过、pnpm test 退出 0、五个页面各有 1 个 meta、导航浏览器测试通过；不设 HOME_URL 构建时实际 meta 为 0。
+- Tiny ed6b202（已签名）推送 main；Workers Builds success。生产：release-check passed（50 个文件哈希、5 个路由、5 个项目）；五个作品页面 meta 为 /，返回链接显示且指向 /，无页面错误；lsy-404.github.io/cassandri-legend/ 无 meta，两个退出链接隐藏、标题无后缀；导航浏览器测试在 tiny.leisiyu.dev 1280/390 通过。

@@ -14,4 +14,4 @@
 - [x] vocal-score：App.vue 与 StartupScreen.vue 的返回链接按 meta 显示，测试
 - [x] CASSIE：TitleBar 与 TerminalEntry 的返回链接按 meta 显示，单元/浏览器测试
 - [x] 各仓库签名提交推送；Tiny 更新子模块指针；构建、测试、浏览器验证（有/无 meta 两种）
-- [ ] 合并 main、部署、生产验证
+- [x] 合并 main、部署、生产验证
