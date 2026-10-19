@@ -147,6 +147,8 @@ if (!honeypot.includes('<title>蜜罐甜品屋 | Tiny Projects</title>') || !hon
 }
 if (/cheat|修改器/i.test(honeypot)) throw new Error('The hosted Honeypot Dessert House must not ship the test cheat tool.');
 if (honeypot.includes('只展示下一次升级带来的变化')) throw new Error('The Honeypot Dessert House shop still shows a leaked design note.');
+await mustExist(join(output, 'games', 'honeypot-dessert', 'assets', 'emoji', 'LICENSE'));
+if (/[→✓★☆]/u.test(honeypot)) throw new Error('The Honeypot Dessert House must draw arrows, checks and stars without text symbols.');
 const cassandriMenu = [
   cassandri.indexOf('id="btnContinue"'),
   cassandri.indexOf('id="btnNewGame"'),
