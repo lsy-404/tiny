@@ -11,3 +11,5 @@
 - honeypot-dessert ef3f424（SSH 签名验证 G）推送 origin/main（66b3020..ef3f424）；子模块本地 main 先 `checkout -B main origin/main` 再提交。
 - 首次 pnpm run check 前未暂存指针，子模块被检出回 66b3020 → 停止；重新检出 main（ef3f424）、`git add games/honeypot-dessert`，重跑 check。
 - pnpm run check 退出 0：构建 5 个入口 1105 个文件；门户 6 项检查、卡桑德里 29/29、织音机 174 通过 2 跳过；dist 甜品屋不含泄露文字。导航浏览器测试（4191 预览）1280/390 通过。
+- Tiny e865368（签名 G）快进 main 并推送 main 与 feature/vocal-score-refresh；Workers Builds minigames success。
+- 生产：release-check passed（50 个文件哈希、5 个路由、5 个项目）；线上甜品屋不含泄露文字/修改器/“智能经营版”，标题“蜜罐甜品屋 | Tiny Projects”，meta home-url=/，含 calc(100vh - 314px) 与 380px 教程框；首页第一张卡“05 · 甜品店经营”，封面 1360 宽已加载、alt 已更新；1280×860 页面高 860 = 视口，退出指向 /，无控制台错误。

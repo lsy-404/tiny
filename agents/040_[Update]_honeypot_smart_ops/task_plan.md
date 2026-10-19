@@ -12,4 +12,4 @@ tiny-5 = 首页第 5 号作品蜜罐甜品屋（games/honeypot-dessert，最新�
 - [x] 首页封面按新版界面重拍，coverAlt 同步
 - [x] README 托管说明同步
 - [x] 子模块提交推送（签名），Tiny 更新指针、构建、测试
-- [ ] 合并进 main、推送部署、生产验证
+- [x] 合并进 main、推送部署、生产验证
