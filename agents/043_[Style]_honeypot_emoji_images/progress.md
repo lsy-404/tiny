@@ -6,3 +6,5 @@
 - 浏览器（4190）：营业场景 67 张图 0 损坏 0 残留；全部客人类型等候 + 全部食谱事件解锁后，营业、图鉴三页、商店三页、教程 1/4/10/14/15、提示与结算弹窗逐一扫描（文本、aria-label、title、placeholder、标题）全部 clean，共 191 张图 0 损坏；真实鼠标点客人头像图片可选中、点桌可入座；夜间实星 #d9a441、空星 #3a4a60；无控制台错误。重拍封面。
 - Tiny build-output 增加：甜品屋须带 assets/emoji/LICENSE，页面不得含 → ✓ ★ ☆。build.mjs 复制 dist（1170 个文件），build-output 通过。
 - 子模块 9c51fa4（签名 G）推送；暂存指针后 pnpm run check 退出 0（构建 5 入口 1170 文件；卡桑德里 29/29；织音机 174 通过 2 跳过）。
+- Tiny 3634a8f（签名 G）推送 main 与功能分支；线上页面含新脚本块后 release-check passed（50 个文件哈希、5 个路由、5 个项目）；线上 assets/emoji/1f9c1.svg、1f491.svg、2764.svg 为 image/svg+xml，LICENSE 200。
+- 线上 1280×860：全部客人等候、全部食谱事件解锁，营业与图鉴三页扫描无 emoji 文本或符号，177 张图 0 损坏，无控制台错误。
