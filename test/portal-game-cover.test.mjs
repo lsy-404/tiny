@@ -15,7 +15,7 @@ assert.equal(legend?.coverAlt, '卡桑德里传说船上银发人物马赛克封
 assert.equal(tenLightYears?.cover, './games/ten-light-years/assets/preview.png');
 assert.equal(tenLightYears?.coverAlt, '十光年的距离实际星图预览');
 assert.equal(honeypot?.cover, './games/honeypot-dessert/assets/preview.png');
-assert.equal(honeypot?.coverAlt, '蜜罐甜品屋营业中的用餐区与后厨');
+assert.equal(honeypot?.coverAlt, '蜜罐甜品屋营业中的用餐区');
 assert.match(styles, /\.card-cover\s*\{/);
 assert.match(styles, /mask-image:\s*linear-gradient/);
 
