@@ -38,7 +38,9 @@ const cassieWorkerAssets=cassieAssetEntries
   .map(entry=>cassie+'assets/'+path.relative(cassieAssetRoot,entry.parentPath).split(path.sep).filter(Boolean).join('/')+(entry.parentPath===cassieAssetRoot?'':'/')+entry.name);
 assert(cassieWorkerAssets.some(file=>/worker/i.test(file)&&/\.m?js$/i.test(file)),'CASSIE must emit its JavaScript workers.');
 assert(cassieWorkerAssets.some(file=>/\.wasm$/i.test(file)),'CASSIE must emit its WebAssembly worker runtime.');
-const files=[...new Set([...existing,tool+'index.html',...toolAssets,...workers,cassie+'index.html',...cassieAssets,...cassieRequired,...cassieWorkerAssets])];
+const card='projects/arknights-card/';
+const cardFiles=(await readdir(path.join(root,card),{recursive:true,withFileTypes:true})).filter(entry=>entry.isFile()).map(entry=>card+path.relative(path.join(root,card),path.join(entry.parentPath,entry.name)).split(path.sep).join('/'));
+const files=[...new Set([...existing,...cardFiles,tool+'index.html',...toolAssets,...workers,cassie+'index.html',...cassieAssets,...cassieRequired,...cassieWorkerAssets])];
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
 let normalizedEdgeHtml=0,normalizedGzipOs=0,verifiedFfmpegParts=0;
 for(let offset=0;offset<files.length;offset+=4){
@@ -86,13 +88,13 @@ for(let offset=0;offset<files.length;offset+=4){
     assert.equal(digest(actual),digest(expected),`${file} differs from verified build`);
   }));
 }
-for(const route of ['games/honeypot-dessert','games/cassandri-legend','games/ten-light-years','projects/vocal-score','projects/cassie']){
+for(const route of ['games/honeypot-dessert','games/cassandri-legend','games/ten-light-years','projects/vocal-score','projects/cassie','projects/arknights-card']){
   const response=await fetch(new URL(route,base),{redirect:'manual'});assert.equal(response.status,307,route);assert(new URL(response.headers.get('location'),base).pathname.endsWith(route+'/'));
 }
 for(const name of ['star-wish','star-lalala']){
   const response=await fetch(new URL(`games/ten-light-years/audio/${name}.m4a`,base),{method:'HEAD'});assert.equal(response.status,200);assert.match(response.headers.get('content-type')||'',/audio/);
 }
 const catalog=await(await fetch(new URL('projects.json',base))).json();
-assert.equal(catalog.length,5);assert(catalog.some(project=>project.path===tool.slice(0,-1)&&project.kind==='tool'));
+assert.equal(catalog.length,6);assert(catalog.some(project=>project.slug==='arknights-card'&&project.path===card.slice(0,-1)));assert(catalog.some(project=>project.path===tool.slice(0,-1)&&project.kind==='tool'));
 assert(catalog.some(project=>project.slug==='cassie'&&project.path===cassie.slice(0,-1)&&project.kind==='tool'));
-console.log(JSON.stringify({status:'passed',verifiedFileHashes:files.length-1,verifiedFfmpegParts,normalizedGzipOs,normalizedEdgeHtml,canonicalRoutes:5,audioHeadChecks:2,projects:catalog.length}));
+console.log(JSON.stringify({status:'passed',verifiedFileHashes:files.length-1,verifiedFfmpegParts,normalizedGzipOs,normalizedEdgeHtml,canonicalRoutes:6,audioHeadChecks:2,projects:catalog.length}));
