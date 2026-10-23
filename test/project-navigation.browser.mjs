@@ -23,7 +23,7 @@ try {
     await page.waitForURL('**/projects/arknights-card/');
     assert.equal(await page.getByRole('slider').count(), 7);
     assert.equal(await page.locator('#faction-select option').count(), 25);
-    const profileHome = page.getByRole('link', { name: /返回主页/ });
+    const profileHome = page.getByRole('link', { name: /返回 Tiny Projects/ });
     assert.equal(new URL(await profileHome.getAttribute('href'), page.url()).pathname, '/');
     await profileHome.click();
     await page.waitForURL((url) => url.pathname === '/');
