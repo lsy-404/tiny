@@ -46,4 +46,4 @@
 | 041 | [Style] honeypot_palette | 蜜罐甜品屋教程框、知道了、食谱/装修购买按钮、图鉴页签、客人名称、每日挑战统一为新版米棕色（含夜间） | 用户要求统一 040 遗留的旧配色 | ✅ 已完成 |
 | 042 | [Style] honeypot_emoji_cleanup | 蜜罐甜品屋移除界面文字 emoji（保留餐品、客人、事件、绿植、爱心等美术），占位改文字/CSS，顶栏用站点图标；连击条、商店标题、桌面状态旧色统一 | 用户要求完成一致性并移除 emoji | ✅ 已完成 |
 | 043 | [Style] honeypot_emoji_images | 蜜罐甜品屋美术 emoji 换成 Fluent Emoji 图片（各设备一致），→ ✓ ★ 改文字或 SVG | 用户：emoji 各设备绘制不同，只豁免 © ™ | ✅ 已完成 |
-| 044 | [Feature] arknights_card | 博士扩列档案：本地填写、阵营/语录切换、二维码裁剪与PNG导出 | 用户要求公开 Tiny 工具 | 🔄 进行中 |
+| 044 | [Feature] arknights_card | 博士扩列档案：本地填写、阵营/语录切换、二维码裁剪与PNG导出 | 用户要求公开 Tiny 工具 | ✅ 已完成 |

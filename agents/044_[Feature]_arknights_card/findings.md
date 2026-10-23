@@ -5,3 +5,4 @@ Tiny 当前主工作区 clean，origin/main b4e1c27，GitHub main protected=fals
 
 [导航浏览器测试] -> [PLAYWRIGHT_MODULE Windows绝对路径] -> [ESM需要file:/// URL，改环境变量为URL后桌面与390px全部通过。]
 既有全站pnpm test通过，织音机176项174通过2跳过（既有Playwright/外部渲染环境限制），本次工具全部4项和QR浏览器测试通过。Wrangler静态资源dry-run通过。
+[Workers Builds状态查询] -> [GitHub check-runs、Cloudflare Builds API] -> [GitHub暂未返回构建检查；最初旧Roaming配置过期401，改用XDG_CONFIG_HOME当前配置可读取Worker，但Builds API权限不足10000/12004。不更改凭据或授权，以已有Wrangler Worker部署权限发布已验证静态目录并核对线上产物。]
