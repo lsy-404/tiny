@@ -49,4 +49,4 @@
 | 044 | [Feature] arknights_card | 博士扩列档案：本地填写、阵营/语录切换、二维码裁剪与PNG导出 | 用户要求公开 Tiny 工具 | ✅ 已完成 |
 | 045 | [Update] arknights_card_editor | 更新原图编辑版、完整干员与精简界面文案 | 用户细化填写与导出要求 | ✅ 已完成 |
 
-| 046 | [Update] classic_card_editor | 恢复博士扩列档案分组表单、字体与可关闭浅色署名 | 用户对编辑布局和字形的最新修正 | 🔄 进行中 |
+| 046 | [Update] classic_card_editor | 恢复博士扩列档案分组表单、字体与可关闭浅色署名 | 用户对编辑布局和字形的最新修正 | ✅ 已完成 |
