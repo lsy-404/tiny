@@ -50,3 +50,4 @@
 | 045 | [Update] arknights_card_editor | 更新原图编辑版、完整干员与精简界面文案 | 用户细化填写与导出要求 | ✅ 已完成 |
 
 | 046 | [Update] classic_card_editor | 恢复博士扩列档案分组表单、字体与可关闭浅色署名 | 用户对编辑布局和字形的最新修正 | ✅ 已完成 |
+| 047 | [Update] card_form_style | 同步扩列卡表单样式整理 | 界面杂乱的修正 | ✅ 已完成 |
