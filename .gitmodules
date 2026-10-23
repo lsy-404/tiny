@@ -13,3 +13,6 @@
 [submodule "games/ten-light-years"]
 	path = games/ten-light-years
 	url = https://github.com/lsy-404/10lightyears.git
+[submodule "apps/arknights-card"]
+	path = apps/arknights-card
+	url = https://github.com/lsy-404/arknights-card.git

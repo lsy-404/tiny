@@ -1,5 +1,21 @@
 [
   {
+    "slug": "arknights-card",
+    "path": "projects/arknights-card",
+    "source": "apps/arknights-card/web",
+    "kind": "tool",
+    "category": "personal",
+    "released": "2026-10-23",
+    "eyebrow": "明日方舟扩列卡",
+    "title": "博士扩列档案",
+    "description": "填写自我介绍、拖动偏好滑块，切换阵营与语录，自动裁剪微信／QQ 二维码并在本地导出图片。",
+    "cover": "./assets/arknights-card.svg",
+    "coverAlt": "博士扩列档案：阵营标志、个人信息与偏好滑块",
+    "credit": "原作：Sayoko. · 游戏素材：鹰角网络 · 素材来源：PRTS",
+    "meta": "本地处理 · 阵营切换 · PNG",
+    "action": "填写档案"
+  },
+  {
     "slug": "honeypot-dessert",
     "path": "games/honeypot-dessert",
     "kind": "game",

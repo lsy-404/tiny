@@ -9,6 +9,7 @@ const modules = await readFile(join(root, '.gitmodules'), 'utf8');
 
 // The four kinds of credit classify each project; the credit line itself names people and roles only.
 const expectedCategories = {
+  'arknights-card': 'personal',
   'honeypot-dessert': 'hosted',
   'vocal-score': 'commissioned',
   cassie: 'personal',

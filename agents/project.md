@@ -1,14 +1,15 @@
 # Tiny Projects
-> 最后更新：2026-10-17
+> 最后更新：2026-10-23
 
 ## 项目目标
-在 tiny.leisiyu.dev 展示小工具、游戏和互动作品（蜜罐甜品屋、织音机、CASSIE PLUS、卡桑德里传说、十光年的距离）；首页按发布日期倒序并附完整署名，门户与 leisiyu.dev 博客双向导航。Tiny 不保存作品源码，全部作品为固定提交的子模块。
+在 tiny.leisiyu.dev 展示小工具、游戏和互动作品（博士扩列档案、蜜罐甜品屋、织音机、CASSIE PLUS、卡桑德里传说、十光年的距离）；首页按发布日期倒序并附完整署名，门户与 leisiyu.dev 博客双向导航。Tiny 不保存作品源码，全部作品为固定提交的子模块。
 
 ## 技术栈
 静态门户、Node 构建、pnpm、Git 子模块、Cloudflare Workers 静态资源。Tiny 根目录无运行依赖；织音机（Vue、Vite 等）与 CASSIE 的依赖在各自仓库锁定。
 
 ## 模块结构
 - apps/portal：门户与项目清单 projects.json（category：personal 独立个人 / commissioned 受委托 / collaboration 合作 / hosted 受委托托管，只用于分类；released 首次发布日期；source 可选源目录）
+- apps/arknights-card：子模块 lsy-404/arknights-card，发布 web/，本地填写扩列档案、切换阵营/语录、二维码裁剪与 PNG 导出
 - apps/cassie：子模块 lsy-404/CASSIE（独立个人创作）
 - apps/vocal-score：子模块 lsy-404/vocal-score（织音机，奥莉安多委托，AGPL-3.0；历史拆分自本仓库）
 - games/honeypot-dessert：子模块 lsy-404/honeypot-dessert（蜜罐甜品屋，槃清作品，受委托托管）
