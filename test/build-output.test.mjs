@@ -13,7 +13,7 @@ const expectedCredits = new Map([
   ['cassandri-legend', '主创：槃清 · 编码：武乙凌薇'],
   ['ten-light-years', '美术、设计、编码：武乙凌薇 · 数据处理：StarryMiko2233']
 ]);
-const repositoryOnly = ['.git', '.gitattributes', '.gitignore', 'node_modules', 'package.json', 'pnpm-lock.yaml', 'reference', 'test'];
+const repositoryOnly = ['.git', '.gitattributes', '.gitignore', 'node_modules', 'package.json', 'pnpm-lock.yaml', 'reference', 'test', '404.html', 'robots.txt', 'sitemap.xml'];
 const homeUrl = (await readFile(join(root, 'tiny.env'), 'utf8')).match(/^HOME_URL=(.+)$/m)?.[1].trim();
 if (!homeUrl) throw new Error('tiny.env must define HOME_URL.');
 

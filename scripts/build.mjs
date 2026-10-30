@@ -26,7 +26,7 @@ assert(new Set(catalog.map(({ slug }) => slug)).size === catalog.length, 'Every 
 assert(new Set(catalog.map(({ path }) => path)).size === catalog.length, 'Every project path must be unique.');
 
 // Every project lives in a submodule; its repository files are not part of the site.
-const repositoryOnly = new Set(['.git', '.gitattributes', '.gitignore', 'node_modules', 'package.json', 'pnpm-lock.yaml', 'reference', 'test']);
+const repositoryOnly = new Set(['.git', '.gitattributes', '.gitignore', 'node_modules', 'package.json', 'pnpm-lock.yaml', 'reference', 'test', '404.html', 'robots.txt', 'sitemap.xml']);
 const categories = new Set(['personal', 'commissioned', 'collaboration', 'hosted']);
 const projectPath = /^(?:[a-z0-9-]+\/)*[a-z0-9-]+$/;
 // HOME_URL (tiny.env, overridable by the environment) is where every project's return link points.

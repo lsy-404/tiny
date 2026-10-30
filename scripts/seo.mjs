@@ -75,7 +75,9 @@ export function renderHome(template, catalog, covers, siteUrl) {
 // Gives a hosted project page a canonical URL, a description and Open Graph tags, and a heading for crawlers when the page renders none itself.
 export function patchProjectPage(html, project, siteUrl) {
   const url = `${siteUrl}/${project.path}/`;
-  const title = /<title>([^<]*)<\/title>/.exec(html)?.[1] ?? project.title;
+  const pageTitle = /<title>([^<]*)<\/title>/.exec(html)?.[1] ?? project.title;
+  // Games carry the site name in the title; the standalone game sites do not.
+  const title = project.path.startsWith('games/') && !pageTitle.includes('Tiny Projects') ? `${pageTitle} | Tiny Projects` : pageTitle;
   const image = project.cover && raster.test(project.cover) ? new URL(project.cover, `${siteUrl}/`).href : undefined;
   const seo = [
     `<meta name="description" content="${escapeHtml(project.description)}">`,
@@ -91,6 +93,7 @@ export function patchProjectPage(html, project, siteUrl) {
     ])
   ].join('\n');
   let page = html
+    .replace(/<title>[^<]*<\/title>/, () => `<title>${escapeHtml(title)}</title>`)
     .replace(/<meta\s+name="description"[^>]*>\s*/g, '')
     .replace(/<link\s+rel="canonical"[^>]*>\s*/g, '')
     .replace(/<meta\s+property="og:[^"]*"[^>]*>\s*/g, '')
