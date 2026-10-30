@@ -12,5 +12,8 @@
     "test": "node test/build-output.test.mjs && node test/worker-config.test.mjs && node test/portal-logo.test.mjs && node test/portal-game-cover.test.mjs && node test/ten-light-years-preview.test.mjs && node test/portal-catalog.test.mjs && pnpm --dir games/cassandri-legend test && pnpm --dir apps/vocal-score test",
     "check": "pnpm run build && pnpm run test",
     "deploy": "pnpm run build && pnpm dlx wrangler deploy"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.5"
   }
 }

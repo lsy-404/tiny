@@ -22,5 +22,5 @@ for (const path of [sourcePreview, outputPreview]) {
 }
 
 const builtEntry = await readFile(outputEntry, 'utf8');
-assert.match(builtEntry, /<meta property="og:image" content="\.\/assets\/preview\.png">/);
+assert.ok(builtEntry.includes('<meta property="og:image" content="https://tiny.leisiyu.dev/games/ten-light-years/assets/preview.png">'));
 console.log('Verified the Ten Light Years preview PNG and og:image metadata in source and build output.');

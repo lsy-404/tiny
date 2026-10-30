@@ -8,7 +8,7 @@ import path from 'node:path';
 const base=process.env.RELEASE_URL||'https://tiny.leisiyu.dev/';
 const root=fileURLToPath(new URL('../dist/',import.meta.url));
 const existing=[
-  'index.html','app.js','styles.css','portal-logo.svg','projects.json',
+  'index.html','styles.css','portal-logo.svg','projects.json','robots.txt','sitemap.xml',
   'games/cassandri-legend/index.html','games/cassandri-legend/game.js','games/cassandri-legend/styles.css','games/cassandri-legend/favicon.svg','games/cassandri-legend/assets/cover.png','games/cassandri-legend/fonts/fusion-pixel-12px-proportional-zh_hans.otf.woff2',
   'games/ten-light-years/index.html','games/ten-light-years/main.js','games/ten-light-years/icon.svg','games/ten-light-years/assets/preview.png','games/ten-light-years/vendor/three.module.js',
   ...['sizes.json','tracks.json','stars.bin','edges.bin','edge_weights.bin'].map(file=>`games/ten-light-years/data/${file}`),

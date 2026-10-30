@@ -1,6 +1,7 @@
 import { cp, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { join, relative, resolve, sep } from 'node:path';
+import { patchProjectPage, prepareCovers, renderHome, writeCrawlerFiles } from './seo.mjs';
 
 const root = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
 const portal = join(root, 'apps', 'portal');
@@ -31,6 +32,8 @@ const projectPath = /^(?:[a-z0-9-]+\/)*[a-z0-9-]+$/;
 // HOME_URL (tiny.env, overridable by the environment) is where every project's return link points.
 // It reaches the projects as <meta name="home-url">; a project built or hosted without it shows no return link.
 const homeUrl = process.env.HOME_URL?.trim() ?? '';
+const siteUrl = process.env.SITE_URL?.trim().replace(/\/$/, '') ?? '';
+assert(/^https:\/\/[^/]+$/.test(siteUrl), 'SITE_URL must be an https origin without a path.');
 const homeMeta = homeUrl && `<meta name="home-url" content="${homeUrl.replaceAll('&', '&amp;').replaceAll('"', '&quot;')}">`;
 
 await rm(output, { recursive: true, force: true });
@@ -52,14 +55,18 @@ for (const project of catalog) {
   await mkdir(destination, { recursive: true });
   await cp(source, destination, { recursive: true, filter: (file) => !repositoryOnly.has(relative(source, file).split(sep)[0]) });
 
-  if (homeMeta) {
-    const page = join(destination, 'index.html');
-    const html = await readFile(page, 'utf8');
-    const head = html.slice(0, html.indexOf('</head>'));
-    assert(html.includes('</head>') && !/<meta\s+name="home-url"/.test(head), `${project.slug} needs a </head> and no home-url meta of its own.`);
-    await writeFile(page, html.replace('</head>', `${homeMeta}\n</head>`));
-  }
+  const page = join(destination, 'index.html');
+  const html = await readFile(page, 'utf8');
+  const head = html.slice(0, html.indexOf('</head>'));
+  assert(html.includes('</head>') && !/<meta\s+name="home-url"/.test(head), `${project.slug} needs a </head> and no home-url meta of its own.`);
+  const patched = patchProjectPage(html, project, siteUrl);
+  await writeFile(page, homeMeta ? patched.replace('</head>', `${homeMeta}\n</head>`) : patched);
 }
+
+const covers = await prepareCovers(catalog, output);
+const home = join(output, 'index.html');
+await writeFile(home, renderHome(await readFile(home, 'utf8'), catalog, covers, siteUrl));
+await writeCrawlerFiles(output, catalog, siteUrl);
 
 const cassieHeaders = await readFile(join(root, 'projects/cassie/_headers'), 'utf8');
 await writeFile(join(output, '_headers'), cassieHeaders.replace(/^\//gm, '/projects/cassie/'));

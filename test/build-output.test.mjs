@@ -25,7 +25,6 @@ async function mustExist(path) {
 await Promise.all([
   mustExist(join(output, 'index.html')),
   mustExist(join(output, 'styles.css')),
-  mustExist(join(output, 'app.js')),
   mustExist(join(output, 'projects.json'))
 ]);
 
@@ -172,16 +171,18 @@ if (!/<h3>潘多拉之盒<\/h3>[\s\S]*<h3>大记忆消失术<\/h3>/.test(cassand
 }
 
 const home = await readFile(join(output, 'index.html'), 'utf8');
-if (!home.includes('project-grid') || !home.includes('app.js') || !home.includes('Tiny Projects') || !home.includes('id="about"') || !home.includes('本站作者：Siyu Lei')) {
+if (!home.includes('project-grid') || !home.includes('class="project-card') || !home.includes('<link rel="canonical" href="https://tiny.leisiyu.dev/">') || !home.includes('Tiny Projects') || !home.includes('id="about"') || !home.includes('本站作者：Siyu Lei')) {
   throw new Error('The portal home page is missing its project list or concise about information.');
 }
 if (home.includes('收录') || home.includes('静态发布') || home.includes('关于本站')) {
   throw new Error('The portal home page contains content outside the project list.');
 }
 
-const portalScript = await readFile(join(output, 'app.js'), 'utf8');
-if (portalScript.includes('收录') || !portalScript.includes('个项目')) {
+if (!home.includes(`${String(catalog.length).padStart(2, '0')} 个项目`)) {
   throw new Error('The portal project count does not match the simplified wording.');
+}
+for (const project of catalog) {
+  if (!home.includes(`href="./${project.path}/"`)) throw new Error(`The home page must link to ${project.slug} in its initial HTML.`);
 }
 const portalStyles = await readFile(join(output, 'styles.css'), 'utf8');
 if (!portalStyles.includes('min-height: 44px') || !portalStyles.includes('@media (max-width: 680px)')) {

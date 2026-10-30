@@ -4,13 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#181818" />
-    <meta
-      name="description"
-      content="Tiny Projects：小工具、游戏与互动作品。"
-    />
-    <title>Tiny Projects</title>
+    <title>Tiny Projects：浏览器里的小工具、游戏与互动作品</title>
     <link rel="icon" type="image/svg+xml" href="./portal-logo.svg" />
     <link rel="stylesheet" href="./styles.css" />
+    <!--seo-->
   </head>
   <body>
     <header class="site-header shell">
@@ -24,16 +21,15 @@
     <main>
       <section class="collection shell" id="collection" aria-labelledby="collection-title">
         <div class="section-heading">
-          <h1 id="collection-title">项目列表</h1>
-          <p id="collection-count" class="collection-count" aria-live="polite"></p>
+          <h1 id="collection-title">Tiny Projects 项目列表</h1>
+          <p id="collection-count" class="collection-count"><!--project-count--></p>
         </div>
-        <div id="project-grid" class="project-grid" aria-live="polite"></div>
+        <div id="project-grid" class="project-grid"><!--project-cards--></div>
       </section>
       <section class="about shell" id="about" aria-labelledby="about-title">
         <h2 id="about-title">关于</h2>
         <p>本站作者：Siyu Lei。Tiny Projects 展示小工具、游戏与互动作品；创作信息均在项目卡片与作品内标注。</p>
       </section>
     </main>
-    <script type="module" src="./app.js"></script>
   </body>
 </html>
