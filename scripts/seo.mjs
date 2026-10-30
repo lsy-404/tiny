@@ -74,7 +74,8 @@ export function renderHome(template, catalog, covers, siteUrl) {
 
 // Gives a hosted project page a canonical URL, a description and Open Graph tags, and a heading for crawlers when the page renders none itself.
 export function patchProjectPage(html, project, siteUrl) {
-  const url = `${siteUrl}/${project.path}/`;
+  // A project with its own site names that site as canonical.
+  const url = project.canonical ?? `${siteUrl}/${project.path}/`;
   const pageTitle = /<title>([^<]*)<\/title>/.exec(html)?.[1] ?? project.title;
   // Games carry the site name in the title; the standalone game sites do not.
   const title = project.path.startsWith('games/') && !pageTitle.includes('Tiny Projects') ? `${pageTitle} | Tiny Projects` : pageTitle;
@@ -105,7 +106,7 @@ export function patchProjectPage(html, project, siteUrl) {
 }
 
 export async function writeCrawlerFiles(output, catalog, siteUrl) {
-  const urls = [`${siteUrl}/`, ...orderProjects(catalog).map(({ project }) => `${siteUrl}/${project.path}/`)];
+  const urls = [`${siteUrl}/`, ...orderProjects(catalog).filter(({ project }) => !project.canonical).map(({ project }) => `${siteUrl}/${project.path}/`)];
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((url) => `  <url><loc>${url}</loc></url>`).join('\n')}\n</urlset>\n`;
   await writeFile(join(output, 'sitemap.xml'), sitemap);
   await writeFile(join(output, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl}/sitemap.xml\n`);
