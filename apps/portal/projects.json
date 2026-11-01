@@ -63,7 +63,6 @@
   {
     "slug": "cassandri-legend",
     "path": "games/cassandri-legend",
-    "canonical": "https://cassandri.voidcarve.com/",
     "kind": "game",
     "category": "collaboration",
     "released": "2026-08-21",
@@ -79,7 +78,6 @@
   {
     "slug": "ten-light-years",
     "path": "games/ten-light-years",
-    "canonical": "https://10lightyears.voidcarve.com/",
     "source": "games/ten-light-years/web",
     "kind": "experience",
     "category": "collaboration",

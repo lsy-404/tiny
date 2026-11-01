@@ -4,13 +4,9 @@ import { fileURLToPath } from 'node:url';
 import { join, resolve } from 'node:path';
 
 const root = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
-const sourceEntry = join(root, 'games', 'ten-light-years', 'web', 'index.html');
 const sourcePreview = join(root, 'games', 'ten-light-years', 'web', 'assets', 'preview.png');
 const outputEntry = join(root, 'dist', 'games', 'ten-light-years', 'index.html');
 const outputPreview = join(root, 'dist', 'games', 'ten-light-years', 'assets', 'preview.png');
-
-const entry = await readFile(sourceEntry, 'utf8');
-assert.ok(entry.includes('<meta property="og:image" content="https://10lightyears.voidcarve.com/assets/preview.png">'));
 
 for (const path of [sourcePreview, outputPreview]) await access(path);
 for (const path of [sourcePreview, outputPreview]) {
