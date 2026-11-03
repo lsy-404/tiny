@@ -15,12 +15,13 @@ try {
     assert.equal(await blog.getAttribute('href'), 'https://leisiyu.dev/');
     const cards = page.locator('.project-card');
     await cards.first().waitFor({ state: 'visible' });
-    assert.equal(await cards.count(), 6, `Expected six project cards at ${width}px.`);
-    assert.deepEqual(await cards.locator('h2').allTextContents(), ['博士扩列档案', '蜜罐甜品屋', '织音机', 'CASSIE PLUS', '卡桑德里传说', '十光年的距离'], `Projects must be listed newest first at ${width}px.`);
-    assert.deepEqual((await cards.locator('.card-kicker').allTextContents()).map((text) => text.slice(0, 2)), ['06', '05', '04', '03', '02', '01'], `Card numbers must follow release order at ${width}px.`);
+    assert.equal(await cards.count(), 7, `Expected seven project cards at ${width}px.`);
+    assert.deepEqual(await cards.locator('h2').allTextContents(), ['博士扩列档案', '蜜罐甜品屋', '织音机', 'CASSIE PLUS', '卡桑德里传说', '十光年的距离', 'UofT Tools'], `Projects must be listed newest first at ${width}px.`);
+    assert.deepEqual((await cards.locator('.card-kicker').allTextContents()).map((text) => text.slice(0, 2)), ['07', '06', '05', '04', '03', '02', '01'], `Card numbers must follow release order at ${width}px.`);
     const profileCard = cards.filter({ has: page.getByRole('heading', { name: '博士扩列档案' }) });
     await profileCard.getByRole('link').click();
     await page.waitForURL('**/p/arknights-card/');
+    await page.getByRole('slider').first().waitFor({ state: 'visible' });
     assert.equal(await page.getByRole('slider').count(), 7);
     assert.equal(await page.locator('#faction-select option').count(), 25);
     const profileHome = page.getByRole('link', { name: /返回 Tiny Projects/ });

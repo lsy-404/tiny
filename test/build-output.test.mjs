@@ -6,6 +6,7 @@ const root = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
 const output = join(root, 'dist');
 const catalog = JSON.parse(await readFile(join(root, 'apps', 'portal', 'projects.json'), 'utf8'));
 const expectedCredits = new Map([
+  ['uoft', 'UofT-Tools · 开源代码 MIT'],
   ['arknights-card', '原作：Sayoko. · 游戏素材：鹰角网络 · 素材来源：PRTS'],
   ['honeypot-dessert', '作者：槃清'],
   ['vocal-score', '委托：奥莉安多 · 设计、编码：武乙凌薇 · 开源代码 AGPL-3.0'],
