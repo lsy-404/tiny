@@ -1,0 +1,46 @@
+name: Update UofT
+
+on:
+  schedule:
+    - cron: "17 */4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-uoft
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Update submodule
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            git reset --hard origin/main
+            git submodule update --init apps/uoft
+            git -C apps/uoft fetch origin main
+            git -C apps/uoft checkout --detach FETCH_HEAD
+            git add apps/uoft
+            if git diff --cached --quiet; then
+              echo "UofT is already up to date."
+              exit 0
+            fi
+            git commit -m "Update UofT"
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Push failed; retrying against the latest main (attempt $attempt)."
+          done
+          echo "Could not update UofT after five attempts." >&2
+          exit 1
