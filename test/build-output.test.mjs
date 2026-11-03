@@ -54,19 +54,19 @@ for (const project of catalog) {
 if (expectedCredits.size !== catalog.length) throw new Error('Every catalog entry needs an expected credit in this test.');
 
 const cassieEntry = catalog.find((project) => project.slug === 'cassie');
-if (!cassieEntry || cassieEntry.path !== 'projects/cassie') {
-  throw new Error('The CASSIE catalog entry must use the projects/cassie route.');
+if (!cassieEntry || cassieEntry.path !== 'p/cassie') {
+  throw new Error('The CASSIE catalog entry must use the p/cassie route.');
 }
-const cassieOutput = join(output, 'projects', 'cassie');
+const cassieOutput = join(output, 'p', 'cassie');
 const cassieHtml = await readFile(join(cassieOutput, 'index.html'), 'utf8');
 const cassieAssets = [...cassieHtml.matchAll(/(?:src|href)="([^"]+)"/g)]
   .map((match) => match[1])
-  .filter((asset) => asset.startsWith('/projects/cassie/') || asset.startsWith('./'));
+  .filter((asset) => asset.startsWith('/p/cassie/') || asset.startsWith('./'));
 if (!cassieAssets.some((asset) => /\.m?js(?:\?|$)/.test(asset))) {
   throw new Error('The CASSIE subpath entry does not reference its emitted application bundle.');
 }
 for (const asset of cassieAssets) {
-  const relative = asset.startsWith('./') ? asset.slice(2) : asset.replace(/^\/projects\/cassie\//, '');
+  const relative = asset.startsWith('./') ? asset.slice(2) : asset.replace(/^\/p\/cassie\//, '');
   await mustExist(join(cassieOutput, relative));
 }
 const cassieFiles = await readdir(cassieOutput, { recursive: true });
@@ -76,8 +76,8 @@ if (!cassieFiles.some((file) => /worker/i.test(file) && /\.m?js$/.test(file))) {
 const headersPath = join(output, '_headers');
 const headers = await readFile(headersPath, 'utf8');
 const headerRules = headers.split(/\r?\n/).filter((line) => line && !line.startsWith('#') && !/^\s/.test(line));
-if (!headerRules.length || headerRules.some((rule) => !rule.startsWith('/projects/cassie/'))) {
-  throw new Error('Every root _headers rule must be scoped under /projects/cassie/.');
+if (!headerRules.length || headerRules.some((rule) => !rule.startsWith('/p/cassie/'))) {
+  throw new Error('Every root _headers rule must be scoped under /p/cassie/.');
 }
 if (!/content-security-policy\s*:/i.test(headers) || !/x-content-type-options\s*:\s*nosniff/i.test(headers)) {
   throw new Error('The CASSIE-scoped headers must include CSP and nosniff.');
@@ -181,8 +181,15 @@ if (home.includes('收录') || home.includes('静态发布') || home.includes('�
 if (!home.includes(`${String(catalog.length).padStart(2, '0')} 个项目`)) {
   throw new Error('The portal project count does not match the simplified wording.');
 }
+const crawlerSitemap = await readFile(join(output, 'sitemap.xml'), 'utf8');
+const routeRedirects = await readFile(join(output, '_redirects'), 'utf8');
 for (const project of catalog) {
   if (!home.includes(`href="./${project.path}/"`)) throw new Error(`The home page must link to ${project.slug} in its initial HTML.`);
+  if (!crawlerSitemap.includes(`https://tiny.leisiyu.dev/${project.path}/`)) throw new Error(`The sitemap must include ${project.slug} at its canonical route.`);
+}
+if (/https:\/\/tiny\.leisiyu\.dev\/projects\//.test(crawlerSitemap)) throw new Error('The sitemap must not publish legacy project routes.');
+if (!routeRedirects.includes('/projects/* /p/:splat 301') || !routeRedirects.includes('/p/ / 301')) {
+  throw new Error('Legacy project routes must redirect permanently and the /p/ root must return to the portal.');
 }
 const portalStyles = await readFile(join(output, 'styles.css'), 'utf8');
 if (!portalStyles.includes('min-height: 44px') || !portalStyles.includes('@media (max-width: 680px)')) {

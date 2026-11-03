@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import sharp from 'sharp';
 
@@ -105,8 +105,41 @@ export function patchProjectPage(html, project, siteUrl) {
 }
 
 export async function writeCrawlerFiles(output, catalog, siteUrl) {
-  const urls = [`${siteUrl}/`, ...orderProjects(catalog).map(({ project }) => `${siteUrl}/${project.path}/`)];
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((url) => `  <url><loc>${url}</loc></url>`).join('\n')}\n</urlset>\n`;
+  const urls = new Set([`${siteUrl}/`, ...orderProjects(catalog).map(({ project }) => `${siteUrl}/${project.path}/`)]);
+  const siteOrigin = new URL(siteUrl).origin;
+  for (const { project } of orderProjects(catalog)) {
+    let sitemap;
+    try {
+      sitemap = await readFile(join(output, project.path, 'sitemap.xml'), 'utf8');
+    } catch (error) {
+      if (error.code === 'ENOENT') continue;
+      throw error;
+    }
+    for (const [, rawLocation] of sitemap.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/gi)) {
+      const sourceUrl = new URL(rawLocation.replaceAll('&amp;', '&'));
+      const projectPath = `/${project.path}`;
+      if (sourceUrl.origin !== siteOrigin || (sourceUrl.pathname !== projectPath && !sourceUrl.pathname.startsWith(`${projectPath}/`))) continue;
+      if (/(?:^|\/)404(?:\.html)?\/?$/i.test(sourceUrl.pathname)) continue;
+      urls.add(sourceUrl.href);
+    }
+  }
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${[...urls].map((url) => `  <url><loc>${escapeHtml(url)}</loc></url>`).join('\n')}\n</urlset>\n`;
   await writeFile(join(output, 'sitemap.xml'), sitemap);
   await writeFile(join(output, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl}/sitemap.xml\n`);
+
+  const redirects = [
+    '/p / 301',
+    '/p/ / 301',
+    '/projects /p/ 301',
+    '/projects/ /p/ 301',
+    ...catalog
+      .filter(({ path }) => path.startsWith('p/'))
+      .flatMap(({ path }) => {
+        const legacyPath = path.replace(/^p\//, 'projects/');
+        const destination = `/${path}/`;
+        return [`/${legacyPath} ${destination} 301`, `/${legacyPath}/ ${destination} 301`];
+      }),
+    '/projects/* /p/:splat 301'
+  ];
+  await writeFile(join(output, '_redirects'), `${redirects.join('\n')}\n`);
 }

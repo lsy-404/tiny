@@ -20,7 +20,7 @@ try {
     assert.deepEqual((await cards.locator('.card-kicker').allTextContents()).map((text) => text.slice(0, 2)), ['06', '05', '04', '03', '02', '01'], `Card numbers must follow release order at ${width}px.`);
     const profileCard = cards.filter({ has: page.getByRole('heading', { name: '博士扩列档案' }) });
     await profileCard.getByRole('link').click();
-    await page.waitForURL('**/projects/arknights-card/');
+    await page.waitForURL('**/p/arknights-card/');
     assert.equal(await page.getByRole('slider').count(), 7);
     assert.equal(await page.locator('#faction-select option').count(), 25);
     const profileHome = page.getByRole('link', { name: /返回 Tiny Projects/ });
@@ -29,14 +29,14 @@ try {
     await page.waitForURL((url) => url.pathname === '/');
     const cassieCard = page.locator('.project-card').filter({ has: page.getByRole('heading', { name: /CASSIE/i }) });
     const cassieLink = cassieCard.getByRole('link');
-    assert.equal(new URL(await cassieLink.getAttribute('href'), base).pathname, '/projects/cassie/');
+    assert.equal(new URL(await cassieLink.getAttribute('href'), base).pathname, '/p/cassie/');
     await cassieLink.click();
-    await page.waitForURL('**/projects/cassie/');
+    await page.waitForURL('**/p/cassie/');
     await returnToHome(page, width);
 
     const scoreCard = page.locator('.project-card').filter({ has: page.getByRole('heading', { name: /织音机|sound loom/i }) });
     await scoreCard.getByRole('link').click();
-    await page.waitForURL('**/projects/vocal-score/');
+    await page.waitForURL('**/p/vocal-score/');
     await returnToHome(page, width);
     const dessertCard = page.locator('.project-card').filter({ has: page.getByRole('heading', { name: '蜜罐甜品屋' }) });
     await dessertCard.getByRole('link').click();

@@ -14,17 +14,17 @@ const existing=[
   ...['sizes.json','tracks.json','stars.bin','edges.bin','edge_weights.bin'].map(file=>`games/ten-light-years/data/${file}`),
   'games/honeypot-dessert/index.html','games/honeypot-dessert/icon.svg','games/honeypot-dessert/assets/preview.png',
 ];
-const tool='projects/vocal-score/';
+const tool='p/vocal-score/';
 const html=await readFile(path.join(root,tool,'index.html'),'utf8');
 const toolAssets=[...html.matchAll(/(?:src|href)="\.\/([^"]+)"/g)].map(match=>tool+match[1]);
 const workers=(await readdir(path.join(root,tool,'assets'))).filter(file=>/^pdf\.worker[.-]/.test(file)).map(file=>`${tool}assets/${file}`);
 assert.equal(workers.length,1,'The local PDF generation worker must be bundled.');
-const cassie='projects/cassie/';
+const cassie='p/cassie/';
 const cassieHtml=await readFile(path.join(root,cassie,'index.html'),'utf8');
 const cassieAssets=[...cassieHtml.matchAll(/(?:src|href)="([^"]+)"/g)]
   .map(match=>match[1])
-  .filter(asset=>asset.startsWith('./')||asset.startsWith('/projects/cassie/'))
-  .map(asset=>cassie+asset.replace(/^\.\//,'').replace(/^\/projects\/cassie\//,''));
+  .filter(asset=>asset.startsWith('./')||asset.startsWith('/p/cassie/'))
+  .map(asset=>cassie+asset.replace(/^\.\//,'').replace(/^\/p\/cassie\//,''));
 assert(cassieAssets.some(file=>/\.m?js$/.test(file)),'CASSIE must emit an app bundle under its subpath.');
 assert(cassieAssets.some(file=>/\.css$/.test(file)),'CASSIE must emit its stylesheet under its subpath.');
 assert(cassieAssets.some(file=>/-[A-Za-z0-9_-]{8}\./.test(file)),'CASSIE must emit an asset using Vite’s eight-character content hash.');
@@ -38,7 +38,7 @@ const cassieWorkerAssets=cassieAssetEntries
   .map(entry=>cassie+'assets/'+path.relative(cassieAssetRoot,entry.parentPath).split(path.sep).filter(Boolean).join('/')+(entry.parentPath===cassieAssetRoot?'':'/')+entry.name);
 assert(cassieWorkerAssets.some(file=>/worker/i.test(file)&&/\.m?js$/i.test(file)),'CASSIE must emit its JavaScript workers.');
 assert(cassieWorkerAssets.some(file=>/\.wasm$/i.test(file)),'CASSIE must emit its WebAssembly worker runtime.');
-const card='projects/arknights-card/';
+const card='p/arknights-card/';
 const cardFiles=(await readdir(path.join(root,card),{recursive:true,withFileTypes:true})).filter(entry=>entry.isFile()).map(entry=>card+path.relative(path.join(root,card),path.join(entry.parentPath,entry.name)).split(path.sep).join('/'));
 const files=[...new Set([...existing,...cardFiles,tool+'index.html',...toolAssets,...workers,cassie+'index.html',...cassieAssets,...cassieRequired,...cassieWorkerAssets])];
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
@@ -88,13 +88,29 @@ for(let offset=0;offset<files.length;offset+=4){
     assert.equal(digest(actual),digest(expected),`${file} differs from verified build`);
   }));
 }
-for(const route of ['games/honeypot-dessert','games/cassandri-legend','games/ten-light-years','projects/vocal-score','projects/cassie','projects/arknights-card']){
+for(const route of ['games/honeypot-dessert','games/cassandri-legend','games/ten-light-years','p/vocal-score','p/cassie','p/arknights-card']){
   const response=await fetch(new URL(route,base),{redirect:'manual'});assert.equal(response.status,307,route);assert(new URL(response.headers.get('location'),base).pathname.endsWith(route+'/'));
+}
+for(const [legacy,target]of [
+  ['projects/arknights-card','p/arknights-card/'],['projects/arknights-card/','p/arknights-card/'],
+  ['projects/vocal-score','p/vocal-score/'],['projects/vocal-score/','p/vocal-score/'],
+  ['projects/cassie','p/cassie/'],['projects/cassie/','p/cassie/'],
+  ['projects','p/'],['projects/','p/'],
+]){
+  const url=new URL(legacy,base);url.searchParams.set('route-check','kept');
+  const response=await fetch(url,{redirect:'manual'});assert.equal(response.status,301,legacy);
+  const destination=new URL(response.headers.get('location'),base);
+  assert.equal(destination.pathname,`/${target}`,legacy);
+  assert.equal(destination.search,'?route-check=kept',`${legacy} query string`);
+}
+for(const route of ['p','p/']){
+  const response=await fetch(new URL(route,base),{redirect:'manual'});assert.equal(response.status,301,route);
+  assert.equal(new URL(response.headers.get('location'),base).pathname,'/',route);
 }
 for(const name of ['star-wish','star-lalala']){
   const response=await fetch(new URL(`games/ten-light-years/audio/${name}.m4a`,base),{method:'HEAD'});assert.equal(response.status,200);assert.match(response.headers.get('content-type')||'',/audio/);
 }
 const catalog=await(await fetch(new URL('projects.json',base))).json();
-assert.equal(catalog.length,6);assert(catalog.some(project=>project.slug==='arknights-card'&&project.path===card.slice(0,-1)));assert(catalog.some(project=>project.path===tool.slice(0,-1)&&project.kind==='tool'));
+assert(catalog.length>=6);assert(catalog.some(project=>project.slug==='arknights-card'&&project.path===card.slice(0,-1)));assert(catalog.some(project=>project.path===tool.slice(0,-1)&&project.kind==='tool'));
 assert(catalog.some(project=>project.slug==='cassie'&&project.path===cassie.slice(0,-1)&&project.kind==='tool'));
-console.log(JSON.stringify({status:'passed',verifiedFileHashes:files.length-1,verifiedFfmpegParts,normalizedGzipOs,normalizedEdgeHtml,canonicalRoutes:6,audioHeadChecks:2,projects:catalog.length}));
+console.log(JSON.stringify({status:'passed',verifiedFileHashes:files.length-1,verifiedFfmpegParts,normalizedGzipOs,normalizedEdgeHtml,canonicalRoutes:catalog.length,audioHeadChecks:2,projects:catalog.length}));

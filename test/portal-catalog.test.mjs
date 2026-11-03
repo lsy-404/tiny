@@ -24,7 +24,7 @@ for (const project of catalog) {
 
 // Tiny keeps no project sources of its own: every entry is built from a submodule.
 const submodules = [...modules.matchAll(/^\s*path = (.+)$/gm)].map((match) => match[1].trim());
-const sourceRoots = { 'projects/cassie': 'apps/cassie', 'projects/vocal-score': 'apps/vocal-score' };
+const sourceRoots = { 'p/cassie': 'apps/cassie', 'p/vocal-score': 'apps/vocal-score' };
 for (const project of catalog) {
   const source = sourceRoots[project.path] ?? project.source ?? project.path;
   assert(submodules.some((path) => source === path || source.startsWith(`${path}/`)), `${project.slug} must come from a submodule`);
