@@ -59,8 +59,22 @@ for (const project of catalog) {
   const html = await readFile(page, 'utf8');
   const head = html.slice(0, html.indexOf('</head>'));
   assert(html.includes('</head>') && !/<meta\s+name="home-url"/.test(head), `${project.slug} needs a </head> and no home-url meta of its own.`);
-  const patched = patchProjectPage(html, project, siteUrl);
-  await writeFile(page, homeMeta ? patched.replace('</head>', `${homeMeta}\n</head>`) : patched);
+  const canonical = /<link rel="canonical" href="([^"]+)"/.exec(html)?.[1];
+  await writeFile(page, canonical === `${siteUrl}/${project.path}/` ? html : patchProjectPage(html, project, siteUrl));
+  await injectHomeUrl(destination);
+}
+
+async function injectHomeUrl(directory) {
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const file = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      await injectHomeUrl(file);
+    } else if (entry.name.endsWith('.html') && homeMeta) {
+      const html = await readFile(file, 'utf8');
+      assert(html.includes('</head>') && !/<meta\s+name="home-url"/.test(html.slice(0, html.indexOf('</head>'))), `${file} needs a </head> and no home-url meta of its own.`);
+      await writeFile(file, html.replace('</head>', `${homeMeta}\n</head>`));
+    }
+  }
 }
 
 const covers = await prepareCovers(catalog, output);
@@ -68,7 +82,7 @@ const home = join(output, 'index.html');
 await writeFile(home, renderHome(await readFile(home, 'utf8'), catalog, covers, siteUrl));
 await writeCrawlerFiles(output, catalog, siteUrl);
 
-const cassieHeaders = await readFile(join(root, 'projects/cassie/_headers'), 'utf8');
-await writeFile(join(output, '_headers'), cassieHeaders.replace(/^\//gm, '/projects/cassie/'));
+const cassieHeaders = await readFile(join(root, 'p/cassie/_headers'), 'utf8');
+await writeFile(join(output, '_headers'), cassieHeaders.replace(/^\//gm, '/p/cassie/'));
 
 console.log(`Built ${catalog.length} entries and ${await fileCount(output)} static files in dist/; ${homeUrl ? `return links point to ${homeUrl}` : 'HOME_URL is not set, so projects show no return link'}.`);

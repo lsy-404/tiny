@@ -1,6 +1,6 @@
 .DS_Store
 dist/
 node_modules/
-projects/vocal-score/
-projects/cassie/
+p/vocal-score/
+p/cassie/
 

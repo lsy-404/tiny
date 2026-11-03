@@ -5,8 +5,9 @@ import { resolve } from 'node:path';
 const root = fileURLToPath(new URL('../', import.meta.url));
 // Projects with a build step; the static games are copied straight from their submodules by build.mjs.
 const apps = [
-  { dir: 'apps/cassie', outDir: '../../projects/cassie' },
-  { dir: 'apps/vocal-score', outDir: '../../projects/vocal-score' }
+  { dir: 'apps/cassie', outDir: '../../p/cassie', base: '/p/cassie/' },
+  { dir: 'apps/vocal-score', outDir: '../../p/vocal-score' },
+  { dir: 'apps/uoft' }
 ];
 
 function run(command, args, cwd = root) {
@@ -16,8 +17,8 @@ function run(command, args, cwd = root) {
 }
 
 run('git', ['submodule', 'update', '--init']);
-for (const { dir, outDir } of apps) {
+for (const { dir, outDir, base } of apps) {
   const cwd = resolve(root, dir);
   run('pnpm', ['install', '--frozen-lockfile'], cwd);
-  run('pnpm', ['run', 'build', '--outDir', outDir, '--emptyOutDir'], cwd);
+  run('pnpm', ['run', 'build', ...(outDir ? ['--outDir', outDir, '--emptyOutDir'] : []), ...(base ? ['--base', base] : [])], cwd);
 }

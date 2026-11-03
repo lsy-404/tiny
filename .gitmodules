@@ -16,3 +16,6 @@
 [submodule "apps/arknights-card"]
 	path = apps/arknights-card
 	url = https://github.com/lsy-404/arknights-card.git
+[submodule "apps/uoft"]
+	path = apps/uoft
+	url = https://github.com/lsy-404/UofT-Tools.git
