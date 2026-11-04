@@ -35,6 +35,6 @@ pnpm run test
 
 1. 作品放在自己的仓库。返回主菜单的入口读取页面里的 `<meta name="home-url" content="…">`：有就显示并指向它，没有就不显示（游戏同时去掉标题里的 Tiny Projects）。
 2. `git submodule add <仓库地址> games/<slug>`，之后更新作品时在子模块中检出新提交并提交新的子模块指针。
-3. 在 `apps/portal/projects.json` 填写 `slug`、`path`（发布路径）、可选的 `source`（入口不在子模块根目录时的源目录）、`category`（`personal`、`commissioned`、`collaboration` 或 `hosted`）、`released`（首次发布日期，`YYYY-MM-DD`）、标题、简介、署名 `credit` 和入口文案；`eyebrow`、`meta` 与封面可按需填写。
+3. 在 `apps/portal/projects.json` 填写 `slug`、`path`（发布路径）、可选的 `source`（入口不在子模块根目录时的源目录）、`category`（`personal`、`commissioned`、`collaboration` 或 `hosted`）、`released`（首次发布日期，`YYYY-MM-DD`）、标题、简介、署名 `credits`（每位创作者一项：`name` 与 `role`）和入口文案；第三方素材说明 `materials`、开源协议 `license` 与封面可按需填写。
 
 工具统一使用 `/p/<slug>/`，旧 `/projects/` 地址永久跳转并保留查询参数。UofT 数据仍在源仓库定时更新，Tiny 每四小时检查并更新固定子模块版本，由 Workers Builds 发布。

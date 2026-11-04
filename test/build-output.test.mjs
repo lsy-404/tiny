@@ -6,13 +6,13 @@ const root = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
 const output = join(root, 'dist');
 const catalog = JSON.parse(await readFile(join(root, 'apps', 'portal', 'projects.json'), 'utf8'));
 const expectedCredits = new Map([
-  ['uoft', 'UofT-Tools · 开源代码 MIT'],
-  ['arknights-card', '原作：Sayoko. · 游戏素材：鹰角网络 · 素材来源：PRTS'],
-  ['honeypot-dessert', '作者：槃清'],
-  ['vocal-score', '委托：奥莉安多 · 设计、编码：武乙凌薇 · 开源代码 AGPL-3.0'],
-  ['cassie', '设计、编码：武乙凌薇 · 开源代码 AGPL-3.0 · 音频改编自 SCP: Secret Laboratory（Northwood Studios，CC BY-SA 3.0）'],
-  ['cassandri-legend', '主创：槃清 · 编码：武乙凌薇'],
-  ['ten-light-years', '美术、设计、编码：武乙凌薇 · 数据处理：StarryMiko2233']
+  ['uoft', { credits: [{ name: '武乙凌薇', role: '设计、编码' }], license: 'MIT' }],
+  ['arknights-card', { credits: [{ name: 'Sayoko.', role: '原作' }, { name: '武乙凌薇', role: '设计、编码' }], materials: '鹰角网络游戏素材，来源 PRTS', license: 'MIT' }],
+  ['honeypot-dessert', { credits: [{ name: '槃清', role: '作者' }] }],
+  ['vocal-score', { credits: [{ name: '奥莉安多', role: '委托' }, { name: '武乙凌薇', role: '设计、编码' }], license: 'AGPL-3.0' }],
+  ['cassie', { credits: [{ name: '武乙凌薇', role: '设计、编码' }], materials: '音频改编自 SCP: Secret Laboratory（Northwood Studios，CC BY-SA 3.0）', license: 'AGPL-3.0' }],
+  ['cassandri-legend', { credits: [{ name: '槃清', role: '主创' }, { name: '武乙凌薇', role: '编码' }] }],
+  ['ten-light-years', { credits: [{ name: '武乙凌薇', role: '美术、设计、编码' }, { name: 'StarryMiko2233', role: '数据处理' }] }]
 ]);
 const repositoryOnly = ['.git', '.gitattributes', '.gitignore', 'node_modules', 'package.json', 'pnpm-lock.yaml', 'reference', 'test'];
 const homeUrl = (await readFile(join(root, 'tiny.env'), 'utf8')).match(/^HOME_URL=(.+)$/m)?.[1].trim();
@@ -33,8 +33,9 @@ for (const project of catalog) {
   const entry = join(output, project.path, 'index.html');
   await mustExist(entry);
   if (!(await stat(entry)).isFile()) throw new Error(`Expected a file: ${entry}`);
-  if (!project.credit) throw new Error(`Catalog entry ${project.slug} is missing its creator credit.`);
-  if (project.credit !== expectedCredits.get(project.slug)) {
+  if (!project.credits?.length) throw new Error(`Catalog entry ${project.slug} is missing its creator credit.`);
+  const { credits, materials, license } = project;
+  if (JSON.stringify({ credits, materials, license }) !== JSON.stringify(expectedCredits.get(project.slug))) {
     throw new Error(`Catalog entry ${project.slug} has an unexpected creator credit.`);
   }
   const sourceReadme = join(root, project.source ?? project.path, 'README.md');

@@ -39,11 +39,12 @@ function renderCard({ project, number }, index, covers) {
   const image = cover
     ? `<img class="card-cover" src="${escapeHtml(cover.src)}" alt="${escapeHtml(project.coverAlt || `${project.title} 预览图`)}" width="${cover.width}" height="${cover.height}" decoding="async"${index < 2 ? '' : ' loading="lazy"'}>`
     : '';
-  const kicker = [String(number).padStart(2, '0'), project.eyebrow].filter(Boolean).join(' · ');
+  const credits = project.credits.map(({ name, role }) => `<div><dt>${escapeHtml(name)}</dt><dd>${escapeHtml(role)}</dd></div>`).join('')
+    + (project.materials ? `<div class="card-materials"><dt>素材</dt><dd>${escapeHtml(project.materials)}</dd></div>` : '');
   return `<article class="project-card project-card-${index + 1}${cover ? ' has-cover' : ''}" data-category="${escapeHtml(project.category)}">${image}`
-    + `<p class="card-kicker">${escapeHtml(kicker)}</p><h2>${escapeHtml(project.title)}</h2>`
-    + `<p class="card-description">${escapeHtml(project.description)}</p><p class="card-credit">${escapeHtml(project.credit)}</p>`
-    + `<div class="card-footer"><span>${escapeHtml(project.meta || '')}</span>`
+    + `<p class="card-kicker">${String(number).padStart(2, '0')} · <time datetime="${escapeHtml(project.released)}">${escapeHtml(project.released)}</time></p><h2>${escapeHtml(project.title)}</h2>`
+    + `<p class="card-description">${escapeHtml(project.description)}</p><dl class="card-credits">${credits}</dl>`
+    + `<div class="card-footer"><span>${project.license ? escapeHtml(`开源代码 ${project.license}`) : ''}</span>`
     + `<a href="./${project.path}/" aria-label="${escapeHtml(`${project.action}：${project.title}`)}">${escapeHtml(project.action)}</a></div></article>`;
 }
 

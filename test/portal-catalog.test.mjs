@@ -20,7 +20,9 @@ const expectedCategories = {
 assert.deepEqual(Object.fromEntries(catalog.map(({ slug, category }) => [slug, category])), expectedCategories);
 for (const project of catalog) {
   assert.match(project.released, /^\d{4}-\d{2}-\d{2}$/, `${project.slug} needs a release date`);
-  assert.doesNotMatch(project.credit, /独立|受委托|合作|托管/, `${project.slug} credit must not name its category`);
+  for (const text of [...project.credits.flatMap(({ name, role }) => [name, role]), project.materials ?? '']) {
+    assert.doesNotMatch(text, /独立|受委托|合作|托管/, `${project.slug} credit must not name its category`);
+  }
 }
 
 // Tiny keeps no project sources of its own: every entry is built from a submodule.

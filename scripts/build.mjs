@@ -12,6 +12,8 @@ function assert(value, message) {
   if (!value) throw new Error(message);
 }
 
+const isText = (value) => typeof value === 'string' && value.trim() !== '';
+
 async function fileCount(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
   const counts = await Promise.all(entries.map(async (entry) => {
@@ -44,7 +46,10 @@ for (const project of catalog) {
   assert(/^[a-z0-9-]+$/.test(project.slug), `Invalid project slug: ${project.slug}`);
   assert(typeof project.path === 'string' && projectPath.test(project.path), `Invalid project path: ${project.path}`);
   assert(project.source === undefined || projectPath.test(project.source), `Invalid project source: ${project.source}`);
-  assert(project.title && project.description && project.credit && project.action, `Catalog entry ${project.slug} is incomplete.`);
+  assert(project.title && project.description && project.action, `Catalog entry ${project.slug} is incomplete.`);
+  assert(Array.isArray(project.credits) && project.credits.length > 0, `Catalog entry ${project.slug} needs a creator list.`);
+  for (const credit of project.credits) assert(isText(credit.name) && isText(credit.role), `Catalog entry ${project.slug} has a creator without a name and role.`);
+  for (const field of ['materials', 'license']) assert(project[field] === undefined || isText(project[field]), `Catalog entry ${project.slug} has an empty ${field}.`);
   assert(categories.has(project.category), `Catalog entry ${project.slug} needs a category: ${[...categories].join(', ')}.`);
   assert(/^\d{4}-\d{2}-\d{2}$/.test(project.released ?? ''), `Catalog entry ${project.slug} needs a YYYY-MM-DD release date.`);
 

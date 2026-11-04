@@ -7,9 +7,9 @@ import { patchProjectPage, renderHome, writeCrawlerFiles } from '../scripts/seo.
 const root = await mkdtemp(join(tmpdir(), 'tiny-seo-routes-'));
 const siteUrl = 'https://tiny.leisiyu.dev';
 const catalog = [
-  { slug: 'arknights-card', path: 'p/arknights-card', title: '博士扩列档案', description: '项目简介', released: '2026-10-23' },
-  { slug: 'uoft', path: 'p/uoft', title: 'UofT Tools', description: 'Student tools', released: '2026-11-03' },
-  { slug: 'honeypot-dessert', path: 'games/honeypot-dessert', title: '蜜罐甜品屋', description: '游戏简介', released: '2026-10-17' }
+  { slug: 'arknights-card', path: 'p/arknights-card', title: '博士扩列档案', description: '项目简介', released: '2026-10-23', credits: [{ name: 'Sayoko.', role: '原作' }] },
+  { slug: 'uoft', path: 'p/uoft', title: 'UofT Tools', description: 'Student tools', released: '2026-11-03', credits: [{ name: '武乙凌薇', role: '设计、编码' }] },
+  { slug: 'honeypot-dessert', path: 'games/honeypot-dessert', title: '蜜罐甜品屋', description: '游戏简介', released: '2026-10-17', credits: [{ name: '槃清', role: '作者' }] }
 ];
 
 try {
