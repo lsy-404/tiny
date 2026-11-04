@@ -31,7 +31,8 @@
     "credits": [
       { "name": "槃清", "role": "作者" }
     ],
-    "action": "开始游玩"
+    "action": "开始游玩",
+    "legacyStorageKeys": ["honeypot_"]
   },
   {
     "slug": "vocal-score",
@@ -49,7 +50,8 @@
     ],
     "license": "AGPL-3.0",
     "action": "打开工具",
-    "source": "p/vocal-score"
+    "source": "p/vocal-score",
+    "legacyStorageKeys": ["svp-vocal-score."]
   },
   {
     "slug": "cassie",
@@ -67,7 +69,8 @@
     "materials": "音频改编自 SCP: Secret Laboratory（Northwood Studios，CC BY-SA 3.0）",
     "license": "AGPL-3.0",
     "action": "打开工具",
-    "source": "p/cassie"
+    "source": "p/cassie",
+    "legacyStorageKeys": ["cassie-locale"]
   },
   {
     "slug": "cassandri-legend",
@@ -83,7 +86,8 @@
       { "name": "槃清", "role": "主创" },
       { "name": "武乙凌薇", "role": "编码" }
     ],
-    "action": "开始游玩"
+    "action": "开始游玩",
+    "legacyStorageKeys": ["kasandri6_"]
   },
   {
     "slug": "ten-light-years",
@@ -100,7 +104,8 @@
       { "name": "武乙凌薇", "role": "美术、设计、编码" },
       { "name": "StarryMiko2233", "role": "数据处理" }
     ],
-    "action": "进入星图"
+    "action": "进入星图",
+    "legacyStorageKeys": ["hud."]
   },
   {
     "slug": "uoft",
@@ -115,6 +120,7 @@
       { "name": "武乙凌薇", "role": "设计、编码" }
     ],
     "license": "MIT",
-    "action": "打开工具"
+    "action": "打开工具",
+    "legacyStorageKeys": ["utm_", "stg_", "utsc_", "uoft_"]
   }
 ]

@@ -29,6 +29,8 @@ pnpm run test
 
 需要 Node.js 22.13 或更高版本，以及 Git 和 pnpm。构建先初始化全部子模块，为 CASSIE、织音机和 UofT Tools 安装各自锁定的依赖并把产物写入 `p/cassie/`、`p/vocal-score/`，UofT Tools 构建至其仓库的 `dist/`；再按清单把所有作品复制到 `dist/`；子模块中的 `.git`、`test/`、`package.json` 等仓库文件不会发布。测试运行门户与构建检查，以及卡桑德里传说和织音机各自仓库中的测试。返回主菜单的地址只在 [`tiny.env`](tiny.env) 定义一次：`HOME_URL=/`，同名环境变量（例如 Workers Builds 中设置的）优先。构建把它写进每个作品页面的 `<meta name="home-url">`；不设置时所有作品都不显示返回入口。`node test/server.mjs` 在 <http://127.0.0.1:4190/> 预览 `dist/`。
 
+所有作品共用同一个源，Web Storage 按源而不是按路径隔离。每个作品页面都会加载 `/storage-scope.js`，把 localStorage 和 sessionStorage 的键存在 `<slug>:` 前缀之下，`clear()`、`key()`、`length` 只看到该作品自己的键。IndexedDB、Cache API 和 Cookie 不做隔离，所以不同作品的数据库名必须不同。同源页面仍可读取原始存储，这只是避免互相覆盖，不是安全边界（那需要独立子域名）。`projects.json` 的 `legacyStorageKeys` 列出作品在隔离之前写入的键前缀，首次加载时会并入该作品的范围。
+
 `main` 已连接 Cloudflare Workers Builds，推送后等待 GitHub 的构建检查成功，再验证线上入口（`node test/release-check.mjs`）。需要手工发布时可运行 `pnpm run deploy`。
 
 ## 新增或更新作品
