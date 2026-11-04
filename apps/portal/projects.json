@@ -28,7 +28,8 @@
     "coverAlt": "蜜罐甜品屋营业中的用餐区",
     "credit": "作者：槃清",
     "meta": "单人 · 8 个存档位 · 桌面浏览器",
-    "action": "开始游玩"
+    "action": "开始游玩",
+    "legacyStorageKeys": ["honeypot_"]
   },
   {
     "slug": "vocal-score",
@@ -44,7 +45,8 @@
     "credit": "委托：奥莉安多 · 设计、编码：武乙凌薇 · 开源代码 AGPL-3.0",
     "meta": "PDF · MusicXML · 简谱",
     "action": "打开工具",
-    "source": "p/vocal-score"
+    "source": "p/vocal-score",
+    "legacyStorageKeys": ["svp-vocal-score."]
   },
   {
     "slug": "cassie",
@@ -60,7 +62,8 @@
     "credit": "设计、编码：武乙凌薇 · 开源代码 AGPL-3.0 · 音频改编自 SCP: Secret Laboratory（Northwood Studios，CC BY-SA 3.0）",
     "meta": "本地处理 · WAV · Opus",
     "action": "打开工具",
-    "source": "p/cassie"
+    "source": "p/cassie",
+    "legacyStorageKeys": ["cassie-locale"]
   },
   {
     "slug": "cassandri-legend",
@@ -75,7 +78,8 @@
     "coverAlt": "卡桑德里传说船上银发人物马赛克封面",
     "credit": "主创：槃清 · 编码：武乙凌薇",
     "meta": "单人 · 自动存档 · 8.0",
-    "action": "开始游玩"
+    "action": "开始游玩",
+    "legacyStorageKeys": ["kasandri6_"]
   },
   {
     "slug": "ten-light-years",
@@ -91,7 +95,8 @@
     "coverAlt": "十光年的距离实际星图预览",
     "credit": "美术、设计、编码：武乙凌薇 · 数据处理：StarryMiko2233",
     "meta": "3D · 音频 · 5847 颗恒星",
-    "action": "进入星图"
+    "action": "进入星图",
+    "legacyStorageKeys": ["hud."]
   },
   {
     "slug": "uoft",
@@ -105,6 +110,7 @@
     "description": "查看学术日历、订阅重要日期，规划课程、学位与专业要求；课程规划保存在当前浏览器。",
     "credit": "UofT-Tools · 开源代码 MIT",
     "meta": "学术日历 · 课程规划 · ICS",
-    "action": "打开工具"
+    "action": "打开工具",
+    "legacyStorageKeys": ["utm_", "stg_", "utsc_", "uoft_"]
   }
 ]

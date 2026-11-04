@@ -1,7 +1,7 @@
 import { cp, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { join, relative, resolve, sep } from 'node:path';
-import { patchProjectPage, prepareCovers, renderHome, writeCrawlerFiles } from './seo.mjs';
+import { escapeHtml, patchProjectPage, prepareCovers, renderHome, writeCrawlerFiles } from './seo.mjs';
 
 const root = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
 const portal = join(root, 'apps', 'portal');
@@ -46,6 +46,7 @@ for (const project of catalog) {
   assert(project.source === undefined || projectPath.test(project.source), `Invalid project source: ${project.source}`);
   assert(project.title && project.description && project.credit && project.action, `Catalog entry ${project.slug} is incomplete.`);
   assert(categories.has(project.category), `Catalog entry ${project.slug} needs a category: ${[...categories].join(', ')}.`);
+  assert(project.legacyStorageKeys === undefined || (Array.isArray(project.legacyStorageKeys) && project.legacyStorageKeys.every((key) => typeof key === 'string' && /^\S+$/.test(key))), `Catalog entry ${project.slug} has invalid legacyStorageKeys.`);
   assert(/^\d{4}-\d{2}-\d{2}$/.test(project.released ?? ''), `Catalog entry ${project.slug} needs a YYYY-MM-DD release date.`);
 
   const source = join(root, project.source ?? project.path);
@@ -61,18 +62,26 @@ for (const project of catalog) {
   assert(html.includes('</head>') && !/<meta\s+name="home-url"/.test(head), `${project.slug} needs a </head> and no home-url meta of its own.`);
   const canonical = /<link rel="canonical" href="([^"]+)"/.exec(html)?.[1];
   await writeFile(page, canonical === `${siteUrl}/${project.path}/` ? html : patchProjectPage(html, project, siteUrl));
-  await injectHomeUrl(destination);
+  await preparePages(destination, project);
 }
 
-async function injectHomeUrl(directory) {
+// Every project page gets the shared storage scope (before its first script) and, when configured, the home-url meta.
+async function preparePages(directory, project) {
+  const adopt = project.legacyStorageKeys?.length ? ` data-adopt="${escapeHtml(project.legacyStorageKeys.join(' '))}"` : '';
+  const scopeScript = `<script src="/storage-scope.js" data-scope="${escapeHtml(project.slug)}"${adopt}></script>`;
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const file = join(directory, entry.name);
     if (entry.isDirectory()) {
-      await injectHomeUrl(file);
-    } else if (entry.name.endsWith('.html') && homeMeta) {
+      await preparePages(file, project);
+    } else if (entry.name.endsWith('.html')) {
       const html = await readFile(file, 'utf8');
-      assert(html.includes('</head>') && !/<meta\s+name="home-url"/.test(html.slice(0, html.indexOf('</head>'))), `${file} needs a </head> and no home-url meta of its own.`);
-      await writeFile(file, html.replace('</head>', `${homeMeta}\n</head>`));
+      const headEnd = html.indexOf('</head>');
+      assert(headEnd !== -1 && !html.includes('storage-scope.js'), `${file} needs a </head> and no storage-scope.js of its own.`);
+      assert(!homeMeta || !/<meta\s+name="home-url"/.test(html.slice(0, headEnd)), `${file} needs no home-url meta of its own.`);
+      const firstScript = html.indexOf('<script');
+      const at = firstScript !== -1 && firstScript < headEnd ? firstScript : headEnd;
+      const scoped = `${html.slice(0, at)}${scopeScript}\n${html.slice(at)}`;
+      await writeFile(file, homeMeta ? scoped.replace('</head>', `${homeMeta}\n</head>`) : scoped);
     }
   }
 }
