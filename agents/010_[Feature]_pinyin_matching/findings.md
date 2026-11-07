@@ -1,3 +1,0 @@
-- LyricEditor already uses pinyin-pro for positional replacements; this feature matches pasted Chinese substrings against existing lyric notes.
-- pinyin-pro provides contextual pinyin and per-character polyphonic readings.
-- Empty lyric labels and `-`/`+` markers are excluded from matching and remain unchanged.
